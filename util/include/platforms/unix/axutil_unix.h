@@ -122,7 +122,6 @@ extern "C"
     /* for file access handling */
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
-extern int usleep (__useconds_t __useconds);
 #endif                          /*HAVE_UNISTD_H */
 
     /* network handling */

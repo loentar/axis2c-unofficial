@@ -326,11 +326,6 @@ file_select(
     const struct dirent *entry)
 {
 
-	#ifdef IS_MACOSX
-		int	file_select(struct dirent *entry);
-	#else
- 		int file_select(const struct dirent *entry);
-	#endif 
     /** FIXME:
       * This block of code has been sitting here doing nothing.
       * I have made the existing logic use this code portion.
