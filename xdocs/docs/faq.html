@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head><title>Apache Axis2/C - Apache Axis2/C - FAQ</title><style type="text/css" media="all">
+          @import url("../style/maven-base.css");
+          
+			    @import url("../style/maven-classic.css");</style><link rel="stylesheet" href="../style/print.css" type="text/css" media="print"></link><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"></meta></head><body class="composite"><div id="banner"><a href="http://www.apache.org/" id="organizationLogo"><img alt="Apache Software Foundation" src="http://www.apache.org/images/asf-logo.gif"></img></a><a href="http://ws.apache.org/axis2/c" id="projectLogo"><img alt="Apache Axis2/C" src="http://ws.apache.org/axis2/images/axis.jpg"></img></a><div class="clear"><hr></hr></div></div><div id="breadcrumbs"><div class="xleft">
+                	Last published: 17 April 2009
+                  | Doc for 1.6.0</div><div class="xright"></div><div class="clear"><hr></hr></div></div><div id="leftColumn"><div id="navcolumn"><div id="menuApache_Axis2_C"><h5>Apache Axis2/C</h5><ul><li class="none"><a href="../index.html">Apache Axis2/C Home</a></li><li class="expanded"><a href="http://ws.apache.org/axis2/c/download.cgi" class="externalLink" title="External Link">Download Axis2/C</a><ul><li class="none"><a href="http://ws.apache.org/axis2/c/download.cgi" class="externalLink" title="External Link">Releases</a></li></ul></li><li class="expanded"><a href="../docs/index.html">Documentation</a><ul><li class="none"><a href="../docs/installationguide.html">Installation Guide</a></li><li class="none"><a href="../docs/axis2c_manual.html">Axis2/C manual</a></li><li class="none"><a href="../docs/faq.html">Axis2/C FAQ</a></li></ul></li><li class="expanded"><a href="../lists_issues.html">Get Involved</a><ul><li class="none"><a href="../lists_issues.html">Mailing Lists &amp; Issue Tracking</a></li><li class="none"><a href="../svn.html">Checkout Source Code</a></li></ul></li><li class="expanded"><a href="../coding_conventions.html">Developer Guidelines</a><ul><li class="none"><a href="../coding_conventions.html">Coding Convention</a></li><li class="none"><a href="../versioning.html">Versionning</a></li></ul></li><li class="expanded"><a href="../team-list.html">Project Information</a><ul><li class="none"><a href="../team-list.html">Project Team</a></li><li class="none"><a href="http://svn.apache.org/viewcvs.cgi/webservices/axis2/trunk/c/" class="externalLink" title="External Link">Source Code</a></li></ul></li></ul></div><a href="http://maven.apache.org/" title="Built by Maven" id="poweredBy"><img alt="Built by Maven" src="../images/logos/maven-button-1.png"></img></a></div></div><div id="bodyColumn"><div class="contentBox"><div class="section"><a name="Apache_Axis2_C_Frequently_Asked_Questions"></a><h2>Apache Axis2/C Frequently Asked Questions</h2><p>Mentioned below are a list of Frequently Asked Questions
+appearing on Axis2/C <a href="http://ws.apache.org/axis2/c/mail-lists.html" class="externalLink" title="External Link">mailing
+lists</a>, and Forums.</p><p>For questions not appearing below, or for any further
+clarifications please do not hesitate to contact the Apache Axis2/C
+user mailing list: <a href="mailto:axis-c-user@ws.apache.org">axis-c-user@ws.apache.org</a>
+(Subscription details are available on the <a href="http://ws.apache.org/axis2/c/mail-lists.html" class="externalLink" title="External Link">Axis2
+site</a>.) Please
+remember to prefix the subject with [Axis2].</p><p style="margin-bottom: 0in;"><br></br>
+</p><p><a name="0_contents"></a></p><div class="subsection"><a name="Contents"></a><h3>Contents</h3><ol>
+<li><a href="#1_introduction">Introduction</a>
+<ol>
+<li><a href="#faq_1_1">What is Axis2/C?</a></li>
+<li><a href="#faq_1_2">Licensing</a></li>
+<li><a href="#faq_1_3">How can I obtain
+Axis2/C?</a></li>
+<li><a href="#faq_1_4">How can I get involved?</a></li>
+</ol>
+</li>
+<li><a href="#2_support">Support</a>
+<ol>
+<li><a href="#faq_2_1">Does Axis2/C support
+code generation?</a></li>
+<li><a href="#faq_2_2">Does Axis2/C support
+SSL?</a></li>
+<li><a href="#faq_2_3">Does Axis2/C support
+compression?</a></li>
+<li><a href="#faq_2_4">Does Axis2/C support
+SOAP Session management?</a></li>
+<li><a href="#faq_2_5">Can I use Axis2/C with
+a proxy?</a></li>
+<li><a href="#faq_2_6">Does Axis2/C work on my platform?</a></li>
+</ol>
+</li>
+<li><a href="#3_how_to">How to?</a>
+<ol>
+<li><a href="#faq_3_1">How can I enable the
+Guththila parser?</a></li>
+<li><a href="#faq_3_2">How do I turn off MTOM
+globally?</a></li>
+<li><a href="#faq_3_3">How can I use Axis2/C
+with C++?</a></li>
+<li><a href="#faq_3_4">How could I secure SOAP
+messages?</a></li>
+</ol>
+</li>
+<li><a href="#4_why_do">Why do?</a>
+<ol>
+<li><a href="#faq_4_1">Why do I get an
+"Unresolved external symbol" error?</a></li>
+<li><a href="#faq_4_2">Why can't I run the
+samples?</a></li>
+<li><a href="#faq_4_3">libxml2 is installed
+but I get "libxml2 not found"?</a></li>
+</ol>
+</li>
+</ol><p style="margin-bottom: 0in;"><br></br>
+</p></div><div class="subsection"><a name="1__Introduction"></a><h3>1. Introduction</h3><p></p></div><div class="subsection"><a name="1_1_What_is_Axis2_C_"></a><h3>1.1 What is Axis2/C?</h3><p>Apache Axis2/C is a web services engine implemented in the C
+programming language based around the Axis2 architecture. Axis2/C can
+be used to provide and consume web services. It has been implemented
+with portablity and the ability to embed and could readily be used as a
+web services enabler for other software.</p></div><div class="subsection"><a name="1_2_Licensing"></a><h3>1.2 Licensing</h3><p>Apache Axis2/C is released under the <a href="http://www.apache.org/licenses/LICENSE-2.0" class="externalLink" title="External Link">Apache 2.0
+License</a>, a copy of the License is found in the LICENSE file
+found in your distribution. Apache Axis2/C also depends on several
+other projects of which licensing information are also included in the
+LICENSE file.</p></div><div class="subsection"><a name="1_3_How_can_I_obtain_Axis2_C_"></a><h3>1.3 How can I obtain Axis2/C?</h3><p>Apache Axis2/C can be freely downloaded at the <a href="http://ws.apache.org/axis2/c/download.cgi" class="externalLink" title="External Link">Axis2/C
+Download Page</a> or at any other mirror. Please note that
+Axis2/C source and binary packages are tailor made to suit specific
+classes of operating systems. Please make sure to choose the one that
+best fits your requirement as well as your operating system.</p></div><div class="subsection"><a name="1_4_How_can_I_get_involved_"></a><h3>1.4 How can I get involved?</h3><p>Apache Axis2/C is a result of a highly involved list of apache
+committers, developers, as well as a keen group of users. For more
+information on our team, and how to get involved, please visit our <a href="http://ws.apache.org/axis2/c/team-list.html" class="externalLink" title="External Link">Team Page</a>.</p><p style="margin-bottom: 0in;"><br></br>
+</p></div><div class="subsection"><a name="2__Support"></a><h3>2. Support</h3><p></p></div><div class="subsection"><a name="2_1_Does_Axis2_C_support_code_generation_"></a><h3>2.1 Does Axis2/C support code generation?</h3><p>Yes, Axis2/C supports code generation using the WSDL2C tool.
+Information on how to use this tool can be found in our <a href="http://ws.apache.org/axis2/c/docs/axis2c_manual.html#wsdl2c" class="externalLink" title="External Link">documentation</a>.</p></div><div class="subsection"><a name="2_2_Does_Axis2_C_support_SSL_"></a><h3>2.2 Does Axis2/C support SSL?</h3><p>Yes, Axis2/C supports SSL enabled communication. More
+information can be found in our <a href="http://ws.apache.org/axis2/c/docs/axis2c_manual.html#ssl_client" class="externalLink" title="External Link">documentation</a>.</p></div><div class="subsection"><a name="2_3_Does_Axis2_C_support_compression_"></a><h3>2.3 Does Axis2/C support compression?</h3><p>Axis2/C itself does not support compression. If you are using
+mod_axis2 and the Apache HTTP server, you can also mod_deflate for
+compression. Also, you can enable compression by using libcurl as the
+http sender on the client side.</p></div><div class="subsection"><a name="2_4_Does_Axis2_C_support_SOAP_Session_management_"></a><h3>2.4 Does Axis2/C support SOAP Session management?</h3><p>No, there is no support for SOAP Sessions in Axis2/C.</p></div><div class="subsection"><a name="2_5_Can_I_use_Axis2_C_with_a_proxy_"></a><h3>2.5 Can I use Axis2/C with a proxy?</h3><p>Yes. This requires a few changes to the axis2.xml file.
+Information about this can be found in our <a href="http://ws.apache.org/axis2/c/docs/axis2c_manual.html#proxy" class="externalLink" title="External Link">documentation</a>.</p><p><a id="faq_2_6"></a></p></div><div class="subsection"><a name="2_6_Does_Axis2_C_work_on_my_platform_"></a><h3>2.6 Does Axis2/C work on my platform?</h3><p>Currently Axis2/C has been ported to following platforms.<br></br>
+1. Linux based distributions(Debian, Ubuntu, Redhat Linux etc...,) <br></br>
+2. Sun Solaris 10(intel) <br></br>
+3. Mac OS X <br></br>
+4. Microsoft Windows<br></br>
+Patches are welcome! 
+</p><p style="margin-bottom: 0in;"><br></br>
+</p></div><div class="subsection"><a name="3__How_to_"></a><h3>3. How to?</h3><p></p></div><div class="subsection"><a name="3_1_How_can_I_enable_the_Guththila_parser_"></a><h3>3.1 How can I enable the Guththila parser?</h3><p>In Windows you have to put the <code>ENABLE_GUTHTHILA =
+1</code> in the <code>build/win32/configure.in</code>
+file. In Linux you have to specify the configuration option <code>--enable-guththila=yes</code>.
+In a Microsoft Visual Studion Project (VC Project) this is little bit
+difficult. You have to add the guththila project to the existing
+Axis2/C solution. Then in the axis2_parser project, we have to remove
+the libxml wrapper files and add the guththila_wrapper files. Also in
+the axis2_parser project we have to change the include files and linker
+input files (libs) to corresponding guththila files (<code>guththila.lib</code>
+and <code>guththila/include</code>).</p></div><div class="subsection"><a name="3_2_How_do_I_turn_off_MTOM_globally_"></a><h3>3.2 How do I turn off MTOM globally?</h3><p>MTOM can be disabled by commenting out the following line from
+your axis2.xml.
+(<code>&lt;parameter name="enableMTOM"
+locked="false"&gt;true&lt;/parameter&gt;</code>)</p></div><div class="subsection"><a name="3_3_How_can_I_use_Axis2_C_with_C___"></a><h3>3.3 How can I use Axis2/C with C++?</h3><p>Just add the following code to your C source files and then
+use a C++ compiler.
+</p>
+    <div class="source"><pre> #ifdef __cplusplus  extern "C"{ #endif /* YOUR C CODE HERE */ #ifdef __cplusplus } #endif
+
+</pre></div>
+  </div><div class="subsection"><a name="3_4_How_could_I_secure_SOAP_messages_"></a><h3>3.4 How could I secure SOAP messages?</h3><p>To secure SOAP messages, you need to engage <a href="http://ws.apache.org/rampart/c/" class="externalLink" title="External Link">Apache Rampart/C</a>
+as a module, which can be downloaded from <a href="http://ws.apache.org/rampart/c/download.cgi" class="externalLink" title="External Link">here</a>.
+Please refer the <a href="http://ws.apache.org/rampart/c/docs/installationguide.html" class="externalLink" title="External Link">installation
+guide</a> and <a href="http://ws.apache.org/rampart/c/docs/configurations.html" class="externalLink" title="External Link">configuration
+guide</a> for more details.</p><p style="margin-bottom: 0in;"><br></br>
+</p></div><div class="subsection"><a name="4__Why_do_"></a><h3>4. Why do?</h3><p></p></div><div class="subsection"><a name="4_1_Why_do_I_get_an_&quot;Unresolved_external_symbol&quot;_error_"></a><h3>4.1 Why do I get an "Unresolved external symbol" error?</h3><p>Make sure that your <code>AXIS2C_HOME/lib</code>
+directory is added to your <code>PATH</code> Environment
+Variable.</p></div><div class="subsection"><a name="4_2_Why_can_t_I_run_the_samples_"></a><h3>4.2 Why can't I run the samples?</h3><p>This is usually because the <code>AXIS2C_HOME</code>
+Environment Variable is not set to the correct path. Make sure that it
+is set to your Axis2/C installation path.</p></div><div class="subsection"><a name="4_3_libxml2_is_installed_but_I_get_&quot;libxml2_not_found&quot;_"></a><h3>4.3 libxml2 is installed but I get "libxml2 not found"?</h3><p>Make sure that you have installed the libxml2-dev packages.</p><p style="margin-bottom: 0in;">1. If you are using a
+Debian based system run<br></br>        $ apt-get install libxml2-dev<br></br>
+</p><p style="margin-bottom: 0in;">2. If you are
+using a RedHat/Fedora based system run<br></br>
+        $ yum install
+libxml2-dev<br></br>
+</p><p style="margin-bottom: 0in;">3. If you install libxml2 from source
+you will not get this error<br></br>
+<br></br>
+</p><div class="clear">
+<hr></hr></div></div></div></div></div><div class="clear"><hr></hr></div><div id="footer"><div class="xright">© 2005-2009, Apache Software Foundation</div><div class="clear"><hr></hr></div></div></body></html>
