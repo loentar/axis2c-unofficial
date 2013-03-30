@@ -147,8 +147,11 @@ extern "C"
 
 #endif
 #endif
+#ifdef WIN32
 #define AXIS2_THREAD_FUNC __stdcall
-
+#else
+#define AXIS2_THREAD_FUNC
+#endif
 
 #ifdef DOXYGEN
 
