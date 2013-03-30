@@ -44,7 +44,7 @@ AXIS2_SERVICES   = $(AXIS2_BINDIR)\services
 AXIS2_MODULES    = $(AXIS2_BINDIR)\modules
 AXIS2_LIBS       = $(AXIS2_BINDIR)\lib
 AXIS2_BINS       = $(AXIS2_BINDIR)\bin
-AXIS2_INCLUDE    = $(AXIS2_BINDIR)\include
+AXIS2_INCLUDE    = $(AXIS2_BINDIR)\include\axis2-$(RELEASE_VER)
 AXIS2_SAMPLES    = $(AXIS2_BINS)\samples
 AXIS2_TOOLS      = $(AXIS2_BINS)\tools
 AXIS2_LOG        = $(AXIS2_BINDIR)\logs
@@ -1373,11 +1373,11 @@ copy_samples:
 	@cd .\..\..\..\win32
 
 copy_include: 
-	@xcopy /E /I /Y $(AXIS2_SOURCE_DIR)\include $(AXIS2_BINDIR)\include
-	@xcopy /E /I /Y $(AXIS2_SOURCE_DIR)\axiom\include $(AXIS2_BINDIR)\include
-	@xcopy /E /I /Y $(AXIS2_SOURCE_DIR)\util\include $(AXIS2_BINDIR)\include
-	@xcopy /E /I /Y $(AXIS2_SOURCE_DIR)\neethi\include $(AXIS2_BINDIR)\include
-	@if exist $(AXIS2_BINDIR)\include\Makefile.am del $(AXIS2_BINDIR)\include\Makefile.am
+	@xcopy /E /I /Y $(AXIS2_SOURCE_DIR)\include $(AXIS2_INCLUDE)
+	@xcopy /E /I /Y $(AXIS2_SOURCE_DIR)\axiom\include $(AXIS2_INCLUDE)
+	@xcopy /E /I /Y $(AXIS2_SOURCE_DIR)\util\include $(AXIS2_INCLUDE)
+	@xcopy /E /I /Y $(AXIS2_SOURCE_DIR)\neethi\include $(AXIS2_INCLUDE)
+	@if exist $(AXIS2_INCLUDE)\Makefile.am del $(AXIS2_INCLUDE)\Makefile.am
 
 
 copy_vc_projects:

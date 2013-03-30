@@ -21,6 +21,15 @@
 
 #include <stddef.h>
 
+#ifdef __MINGW32__
+#ifndef WIN32
+#define WIN32
+#endif
+#ifndef AXIS2_SKIP_INT_TYPEDEFS
+#define AXIS2_SKIP_INT_TYPEDEFS
+#endif
+#endif
+
 #if !defined(WIN32)
 #include <stdint.h> 
 #endif
@@ -132,14 +141,13 @@ extern "C"
 #if defined(__unix)
 #define AXIS2_CALL
 #define AXIS2_WUR
-
-
 #else                           /* WIN32 */
-#define AXIS2_CALL __stdcall
+#define AXIS2_CALL
 #define AXIS2_WUR
+
 #endif
 #endif
-#define AXIS2_THREAD_FUNC AXIS2_CALL
+#define AXIS2_THREAD_FUNC __stdcall
 
 
 #ifdef DOXYGEN

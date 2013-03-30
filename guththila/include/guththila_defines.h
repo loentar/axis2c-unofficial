@@ -34,7 +34,7 @@
 #if defined(__unix)
 #define GUTHTHILA_CALL
 #else
-#define GUTHTHILA_CALL __stdcall
+#define GUTHTHILA_CALL _cdecl
 #endif
 #endif
 
