@@ -9,7 +9,8 @@ libguththila_la_SOURCES = guththila_buffer.c \
 			  guththila_attribute.c \
 			  guththila_xml_parser.c \
 			  guththila_stack.c \
-			  guththila_xml_writer.c
+			  guththila_xml_writer.c \
+			  guththila_utf8.c
 
 libguththila_la_LIBADD = ../../util/src/libaxutil.la
 

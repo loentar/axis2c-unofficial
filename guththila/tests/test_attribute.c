@@ -1,29 +1,32 @@
 #include <guththila.h>
 #include <check.h>
+#include <string.h>
 #include "test.h"
 
 START_TEST(test_attribute)
 {
     int count = 0;;
     int c = 0;
-    guththila_attribute_t *att;
-    red = guththila_reader_create_for_file(env, "resources/om/evaluate.xml");
-    parser = guththila_create(env, red);
-    guththila_read(env, parser);
-    c = guththila_next(env, parser);
+    guththila_attr_t *att;
+    red = guththila_reader_create_for_file("resources/om/evaluate.xml", env);
+    parser =
+        (guththila_t *) AXIS2_MALLOC(env->allocator, sizeof(guththila_t));
+    guththila_init(parser, red, env);
+    //guththila_read(parser, env);
+    c = guththila_next(parser, env);
     while (!count)
     {
-        c = guththila_next(env, parser);
-        count = guththila_get_attribute_count(env, parser);
+        c = guththila_next(parser, env);
+        count = guththila_get_attribute_count(parser, env);
         if (count)
-            att = guththila_get_attribute(env, parser);
+            att = guththila_get_attribute(parser, env);
     }
     fail_if(count == 0, "guththila attribute count failed");
     fail_unless(!strcmp
-                (guththila_get_attribute_name(env, parser, att), "color"),
+                (guththila_get_attribute_name(parser, att, env), "color"),
                 "guththila attribute name failed");
     fail_unless(!strcmp
-                (guththila_get_attribute_value(env, parser, att), "brown"),
+                (guththila_get_attribute_value(parser, att, env), "brown"),
                 "guththila attribute value failed");
 }
 
@@ -33,43 +36,45 @@ START_TEST(
 {
     int count = 0;;
     int c = 0;
-    guththila_attribute_t *att;
+    guththila_attr_t *att;
     red =
-        guththila_reader_create_for_file(env, "resources/soap/soapmessage.xml");
-    parser = guththila_create(env, red);
-    guththila_read(env, parser);
-    c = guththila_next(env, parser);
+        guththila_reader_create_for_file("resources/soap/soapmessage.xml", env);
+    parser =
+        (guththila_t *) AXIS2_MALLOC(env->allocator, sizeof(guththila_t));
+    guththila_init(parser, red, env);
+    //guththila_read(parser, env);
+    c = guththila_next(parser, env);
     while (!count)
     {
-        c = guththila_next(env, parser);
-        count = guththila_get_attribute_count(env, parser);
+        c = guththila_next(parser, env);
+        count = guththila_get_attribute_count(parser, env);
         if (count)
-            att = guththila_get_attribute(env, parser);
+            att = guththila_get_attribute(parser, env);
     }
     fail_if(count == 0, "guththila attribute count failed");
     fail_unless(!strcmp
-                (guththila_get_attribute_prefix(env, parser, att), "soapenv"),
+                (guththila_get_attribute_prefix(parser, att, env), "soapenv"),
                 "guththila attribute count failed");
     fail_unless(!strcmp
-                (guththila_get_attribute_name(env, parser, att),
+                (guththila_get_attribute_name(parser, att, env),
                  "mustUnderstand"), "guththila attribute count failed");
-    fail_unless(!strcmp(guththila_get_attribute_value(env, parser, att), "0"),
+    fail_unless(!strcmp(guththila_get_attribute_value(parser, att, env), "0"),
                 "guththila attribute count failed");
     count = 0;
     while (!count)
     {
-        c = guththila_next(env, parser);
-        count = guththila_get_attribute_count(env, parser);
+        c = guththila_next(parser, env);
+        count = guththila_get_attribute_count(parser, env);
         if (count)
-            att = guththila_get_attribute(env, parser);
+            att = guththila_get_attribute(parser, env);
     }
     fail_unless(!strcmp
-                (guththila_get_attribute_prefix(env, parser, att), "soapenv"),
+                (guththila_get_attribute_prefix(parser, att, env), "soapenv"),
                 "guththila attribute count failed");
     fail_unless(!strcmp
-                (guththila_get_attribute_name(env, parser, att),
+                (guththila_get_attribute_name(parser, att, env),
                  "mustUnderstand"), "guththila attribute count failed");
-    fail_if(!strcmp(guththila_get_attribute_value(env, parser, att), "1"),
+    fail_if(!strcmp(guththila_get_attribute_value(parser, att, env), "1"),
             "guththila attribute count failed");
 }
 END_TEST Suite * guththila_attribute_suite(void)

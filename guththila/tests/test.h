@@ -20,4 +20,11 @@ Suite *guththila_suite(
 Suite *guththila_attribute_suite(
     void);
 
+Suite *guththila_utf8_decoder_suite(
+    void);
+
+
+Suite *guththila_utf8_encoder_suite(
+    void);
+
 #endif

@@ -22,6 +22,7 @@
 #include <guththila_token.h>
 #include <guththila_reader.h>
 #include <guththila_xml_writer.h>
+#include <guththila_utf8.h>
 #include <guththila_attribute.h>
 #include <guththila_namespace.h>
 #include <guththila_buffer.h>
@@ -78,6 +79,8 @@ typedef struct guththila_s
     guththila_buffer_t buffer;  /* Holding incoming xml string */  
 
     guththila_reader_t *reader; /* Reading the data */
+
+    guththila_utf8_decoder_t *decoder; /* Decoding the data */
 
     guththila_token_t *prefix; /* Prefix of the xml element */
 

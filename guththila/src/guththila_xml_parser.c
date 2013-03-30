@@ -26,6 +26,12 @@
 #define GUTHTHILA_VALIDATION_PARSER
 
 /*
+ * Read the next byte from the reader and return it.
+ */
+static int  
+guththila_next_byte(guththila_t * m,int eof,const axutil_env_t * env);
+
+/*
  * Read the next char from the reader and return it.
  */
 static int  
@@ -38,7 +44,7 @@ static int
 guththila_next_no_char( 
     guththila_t * m,
     int eof,
-    guththila_char_t *bytes,
+    int *code_points,
     size_t no,
     const axutil_env_t * env);
 
@@ -98,8 +104,8 @@ guththila_process_xml_dec(
 #define GUTHTHILA_TOKEN_OPEN(m, tok, _env)					\
     m->temp_tok = guththila_tok_list_get_token(&m->tokens, _env); \
     m->temp_tok->type = _Unknown; \
-    m->temp_tok->_start = (int)m->next; \
-    m->last_start = (int)m->next - 1;
+    m->temp_tok->_start = (int)m->next - (m->decoder->used_bytes - 1); \
+    m->last_start = m->temp_tok->_start - 1;
 /* We are sure that the difference lies within the int range */
 #endif  
     
@@ -246,6 +252,26 @@ guththila_init(guththila_t * m, void *reader, const axutil_env_t * env)
         }
         return GUTHTHILA_FAILURE;
     }     
+    m->decoder = guththila_utf8_decoder_create(env);
+    if (!m->decoder)
+    {
+        if (temp_name)
+        {
+            AXIS2_FREE(env->allocator, temp_name);
+            temp_name = NULL;
+        }
+        if (temp_tok)
+        {
+            AXIS2_FREE(env->allocator, temp_tok);
+            temp_tok = NULL;
+        }
+        if (e_namesp)
+        {
+            AXIS2_FREE(env->allocator, e_namesp);
+            e_namesp = NULL;
+        }
+        return GUTHTHILA_FAILURE;
+    }
     m->name = NULL;
     m->prefix = NULL;
     m->value = NULL;
@@ -369,6 +395,7 @@ guththila_un_init(guththila_t * m,const axutil_env_t * env)
             AXIS2_FREE(env->allocator, elem);
         }
     }
+    guththila_utf8_decoder_free(m->decoder, env);
     guththila_stack_un_init(&m->elem,env);   
     guththila_stack_un_init(&m->namesp, env);
     guththila_tok_list_free_data(&m->tokens, env);
@@ -675,7 +702,7 @@ guththila_next(guththila_t * m,const axutil_env_t * env)
     guththila_elem_namesp_t * nmsp = NULL;
     guththila_token_t * tok = NULL;
     int quote = 0, ref = 0;
-    guththila_char_t c_arra[16] = { 0 };
+    int c_arra[16] = { 0 };
     int c = -1;
     guththila_attr_t * attr = NULL;
     int size = 0, i = 0, nmsp_counter, loop = 0, white_space = 0;
@@ -1072,7 +1099,7 @@ guththila_process_xml_dec(
     const axutil_env_t * env) 
 {
     guththila_token_t * tok = NULL;
-    guththila_char_t c_arra[16] = { 0 };
+    int c_arra[16] = { 0 };
     int c = -1;
     int quote = -1;
     int nc = -1;
@@ -1503,9 +1530,9 @@ guththila_get_encoding(
     return "UTF-8";
 }
 
-/* Return the next character */
+/* Return the next byte */
 static int 
-guththila_next_char(guththila_t * m, int eof, const axutil_env_t * env) 
+guththila_next_byte(guththila_t * m, int eof, const axutil_env_t * env) 
 {
     int c;
     size_t data_move, i;
@@ -1518,8 +1545,8 @@ guththila_next_char(guththila_t * m, int eof, const axutil_env_t * env)
     if (m->reader->type == GUTHTHILA_MEMORY_READER &&
          m->next < GUTHTHILA_BUFFER_CURRENT_DATA_SIZE(m->buffer))
     {
-        c = m->buffer.buff[0][m->next++];
-        return c >= 0 ? c : -1;
+        c = (unsigned char) m->buffer.buff[0][m->next++];
+        return c;
     }
     else if (m->reader->type == GUTHTHILA_IO_READER ||
              m->reader->type == GUTHTHILA_FILE_READER)
@@ -1530,10 +1557,10 @@ guththila_next_char(guththila_t * m, int eof, const axutil_env_t * env)
              GUTHTHILA_BUFFER_CURRENT_DATA_SIZE(m->buffer))
         {
             /* What we are looking for is already in the buffer */
-            c = m->buffer.buff[m->buffer.cur_buff][m->next++ -
+            c = (unsigned char) m->buffer.buff[m->buffer.cur_buff][m->next++ -
                                                     GUTHTHILA_BUFFER_PRE_DATA_SIZE
                                                     (m->buffer)];
-            return c >= 0 ? c : -1;
+            return c;
         }
         else if ( m->buffer.cur_buff != -1 &&
                   m->next >= GUTHTHILA_BUFFER_PRE_DATA_SIZE(m->buffer) +
@@ -1608,10 +1635,10 @@ guththila_next_char(guththila_t * m, int eof, const axutil_env_t * env)
             {
                 return -1;
             }
-            c = m->buffer.buff[m->buffer.cur_buff][m->next++ -
+            c = (unsigned char) m->buffer.buff[m->buffer.cur_buff][m->next++ -
                                                     GUTHTHILA_BUFFER_PRE_DATA_SIZE
                                                     (m->buffer)];
-            return c >= 0 ? c : -1;
+            return c;
         }
         /* Initial stage. We dont' have the array of buffers allocated*/
         else if (m->buffer.cur_buff == -1)
@@ -1625,11 +1652,40 @@ guththila_next_char(guththila_t * m, int eof, const axutil_env_t * env)
                 guththila_reader_read(m->reader, m->buffer.buff[0], 0,
                                       GUTHTHILA_BUFFER_DEF_SIZE, env);
             m->buffer.data_size[0] = temp;
-            c = m->buffer.buff[0][m->next++];
-            return c >= 0 ? c : -1;
+            c = (unsigned char) m->buffer.buff[0][m->next++];
+            return c;
         }
     }
     return -1;
+}
+
+/* Return the next character code point */
+static int 
+guththila_next_char(guththila_t * m, int eof, const axutil_env_t * env) 
+{
+    int c;
+    int code_point;
+    if (GUTHTHILA_UTF8_DECODER_IS_ERROR(m->decoder) &&
+        GUTHTHILA_UTF8_DECODER_IS_CODE_POINT(m->decoder))
+    {
+        code_point = GUTHTHILA_UTF8_DECODER_GET_CODE_POINT(m->decoder);
+        guththila_utf8_decoder_clear(m->decoder, env);
+        return code_point;
+    }
+    c = guththila_next_byte(m, eof, env);
+    if (c == -1)
+        return -1;
+    while (! guththila_utf8_decoder_decode(m->decoder, c, &code_point, env))
+    {
+        if (GUTHTHILA_UTF8_DECODER_IS_ERROR(m->decoder))
+            return -1;
+        c = guththila_next_byte(m, eof, env);
+        if (c == -1)
+            return -1;
+    }
+    if (GUTHTHILA_UTF8_DECODER_IS_ERROR(m->decoder))
+        return -1;
+    return code_point;
 }
 
 /* Same functionality as the guththila_next_char. But insted of reading 
@@ -1637,156 +1693,41 @@ guththila_next_char(guththila_t * m, int eof, const axutil_env_t * env)
  * */ 
 static int 
 guththila_next_no_char(guththila_t * m, int eof, 
-					   guththila_char_t *bytes, 
-					   size_t no, const axutil_env_t * env) 
+                                          int *code_points, 
+                                          size_t no, const axutil_env_t * env) 
 {
-    int temp, data_move;
+    int c;
     size_t i;
-    guththila_char_t **temp1;
-    size_t * temp2, *temp3;
-    if (m->reader->type == GUTHTHILA_MEMORY_READER &&
-         m->next + no - 1 < GUTHTHILA_BUFFER_CURRENT_DATA_SIZE(m->buffer) &&
-         m->buffer.cur_buff != -1)
-    {
-        for (i = 0; i < no; i++)
-        {
-            bytes[i] = m->buffer.buff[0][m->next++];
-        }
+
+    if (no == 0)
         return (int)no;
-        /* We are sure that the difference lies within the int range */
-    }
-    else if (m->reader->type == GUTHTHILA_IO_READER ||
-             m->reader->type == GUTHTHILA_FILE_READER)
+
+    i = 0;
+    if (GUTHTHILA_UTF8_DECODER_IS_ERROR(m->decoder) &&
+        GUTHTHILA_UTF8_DECODER_IS_CODE_POINT(m->decoder))
     {
-        if (m->next <
-             GUTHTHILA_BUFFER_PRE_DATA_SIZE(m->buffer) +
-             GUTHTHILA_BUFFER_CURRENT_DATA_SIZE(m->buffer) + no &&
-             m->buffer.cur_buff != -1)
-        {
-            for (i = 0; i < no; i++)
-            {
-                bytes[i] =
-                    m->buffer.buff[m->buffer.cur_buff][m->next++ -
-                                                       GUTHTHILA_BUFFER_PRE_DATA_SIZE
-                                                       (m->buffer)];
-            }
-            return (int)no;
-            /* We are sure that the difference lies within the int range */
-        }
-        else if (m->next >=
-                 GUTHTHILA_BUFFER_PRE_DATA_SIZE(m->buffer) +
-                 GUTHTHILA_BUFFER_CURRENT_DATA_SIZE(m->buffer) + no &&
-                 m->buffer.cur_buff != -1)
-        {
-            /* We are sure that the difference lies within the int range */
-            if (m->buffer.cur_buff == (int)m->buffer.no_buffers - 1)
-            {
-                temp = m->buffer.no_buffers * 2;
-                temp1 =
-                    (guththila_char_t **) AXIS2_MALLOC(env->allocator,
-                                           sizeof(guththila_char_t *) * temp);
-                temp2 =
-                    (size_t *) AXIS2_MALLOC(env->allocator,
-                                            sizeof(size_t) * temp);
-                temp3 =
-                    (size_t *) AXIS2_MALLOC(env->allocator,
-                                            sizeof(size_t) * temp);
-                if (!temp1 || !temp2 || !temp3)
-                    return (-1);
-                for (i = 0; i < m->buffer.no_buffers; i++)
-                {
-                    temp1[i] = m->buffer.buff[i];
-                    temp2[i] = m->buffer.buffs_size[i];
-                    temp3[i] = m->buffer.data_size[i];
-                }
-                AXIS2_FREE(env->allocator, m->buffer.buff);
-                AXIS2_FREE(env->allocator, m->buffer.data_size);
-                AXIS2_FREE(env->allocator, m->buffer.buffs_size);
-                m->buffer.buff = temp1;
-                m->buffer.buffs_size = temp2;
-                m->buffer.data_size = temp3;
-                m->buffer.no_buffers *= 2;
-            }
-            m->buffer.buff[m->buffer.cur_buff + 1] =
-                (guththila_char_t *) AXIS2_MALLOC(env->allocator,
-                                      sizeof(guththila_char_t) *
-                                      m->buffer.data_size[m->buffer.cur_buff] *
-                                      2);
-            if (!m->buffer.buff[m->buffer.cur_buff + 1])
-                return -1;
-            m->buffer.cur_buff++;
-            m->buffer.buffs_size[m->buffer.cur_buff] =
-                m->buffer.buffs_size[m->buffer.cur_buff - 1] * 2;
-            m->buffer.data_size[m->buffer.cur_buff] = 0;
-            data_move = (int)m->next;
-            /* We are sure that the difference lies within the int range */
-            if ((m->last_start != -1) && (m->last_start < data_move))
-                data_move = m->last_start;
-            data_move = 
-                (int)m->buffer.data_size[m->buffer.cur_buff - 1] -
-                (data_move - (int)m->buffer.pre_tot_data);
-            /* We are sure that the difference lies within the int range */
-            if (data_move)
-            {
-                memcpy(m->buffer.buff[m->buffer.cur_buff],
-                        m->buffer.buff[m->buffer.cur_buff - 1] +
-                        m->buffer.data_size[m->buffer.cur_buff - 1] - data_move,
-                        data_move);
-                m->buffer.data_size[m->buffer.cur_buff - 1] -= data_move;
-                m->buffer.data_size[m->buffer.cur_buff] += data_move;
-            }
-            m->buffer.pre_tot_data +=
-                m->buffer.data_size[m->buffer.cur_buff - 1];
-            temp =
-                guththila_reader_read(m->reader,
-                                      GUTHTHILA_BUFFER_CURRENT_BUFF(m->buffer),
-                                      0,
-                                      (int)GUTHTHILA_BUFFER_CURRENT_BUFF_SIZE(m->
-                                                                         buffer),
-                                      env);
-                /* We are sure that the difference lies within the int range */
-            if (temp > 0)
-            {
-                m->buffer.data_size[m->buffer.cur_buff] += temp;
-            }
-            else
-            {
-                return -1;
-            }
-            for (i = 0; i < no; i++)
-            {
-                bytes[i] =
-                    m->buffer.buff[m->buffer.cur_buff][m->next++ -
-                                                       GUTHTHILA_BUFFER_PRE_DATA_SIZE
-                                                       (m->buffer)];
-            }
-            return (int)no;
-            /* We are sure that the difference lies within the int range */
-        }
-        else if (m->buffer.cur_buff == -1)
-        {
-            m->buffer.buff[0] =
-                (guththila_char_t *) AXIS2_MALLOC(env->allocator,
-                                      sizeof(guththila_char_t) * GUTHTHILA_BUFFER_DEF_SIZE);
-            m->buffer.buffs_size[0] = GUTHTHILA_BUFFER_DEF_SIZE;
-            m->buffer.cur_buff = 0;
-            temp =
-                guththila_reader_read(m->reader, m->buffer.buff[0], 0,
-                                      GUTHTHILA_BUFFER_DEF_SIZE, env);
-            m->buffer.data_size[0] = temp;
-            for (i = 0; i < no; i++)
-            {
-                bytes[i] =
-                    m->buffer.buff[m->buffer.cur_buff][m->next++ -
-                                                       GUTHTHILA_BUFFER_PRE_DATA_SIZE
-                                                       (m->buffer)];
-            }
-            return (int)no;
-            /* We are sure that the difference lies within the int range */
-        }
+        code_points[i] = GUTHTHILA_UTF8_DECODER_GET_CODE_POINT(m->decoder);
+        i++;
+        guththila_utf8_decoder_clear(m->decoder, env);
     }
-    return -1;
+
+    while (i < no)
+    {
+        c = guththila_next_byte(m, eof, env);
+        if (c == -1)
+            return -1;
+        while (! guththila_utf8_decoder_decode(m->decoder, c, &code_points[i],
+                                               env))
+        {
+            if (GUTHTHILA_UTF8_DECODER_IS_ERROR(m->decoder))
+                return -1;
+            c = guththila_next_byte(m, eof, env);
+            if (c == -1)
+                return -1;
+        }
+        if (GUTHTHILA_UTF8_DECODER_IS_ERROR(m->decoder))
+            return -1;
+        i++;
+    }
+    return (int)no;
 }
-
-
-
