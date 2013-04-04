@@ -50,3 +50,9 @@ INCLUDES = -I$(top_builddir)/include \
            -I$(top_builddir)/src/core/deployment \
            -I$(top_builddir)/util/include \
            -I$(top_builddir)/axiom/include
+
+if AXIS2_JSON_ENABLED
+libaxis2_http_sender_la_SOURCES += axis2_json_writer.c
+libaxis2_http_sender_la_LIBADD += $(JSON_LIBS)
+INCLUDES += $(JSON_CFLAGS)
+endif

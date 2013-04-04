@@ -51,7 +51,7 @@ AC_CHECK_LIB(dl, dlopen)
 CFLAGS="$CFLAGS -D_LARGEFILE64_SOURCE -DAXIS2_GUTHTHILA_ENABLED"
 
 if test "$GCC" = "yes"; then
-    CFLAGS="$CFLAGS -ansi -ggdb3 -Wall -Wno-implicit-function-declaration "
+    CFLAGS="$CFLAGS -ansi -g -O0 -Wall -Wno-implicit-function-declaration -Wno-unused-but-set-variable "
 fi
 
 LDFLAGS="$LDFLAGS -lpthread"

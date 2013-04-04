@@ -744,6 +744,13 @@ extern "C"
      */
 #define AXIS2_HTTP_HEADER_ACCEPT_APPLICATION_DIME "application/dime"
 
+#ifdef AXIS2_JSON_ENABLED
+    /**
+     * AXIS2_HTTP_HEADER_ACCEPT_JSON
+     */
+#define AXIS2_HTTP_HEADER_ACCEPT_JSON "application/json"
+#endif
+
     /**
      * Cookie headers
      */

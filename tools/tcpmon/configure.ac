@@ -20,7 +20,7 @@ AC_PROG_MAKE_SET
 
 CFLAGS="$CFLAGS -D_LARGEFILE64_SOURCE -g"
 if test "$GCC" = "yes"; then
-    CFLAGS="$CFLAGS -ansi -Wall -Wno-implicit-function-declaration"
+    CFLAGS="$CFLAGS -ansi -Wall -Wno-implicit-function-declaration -O0"
 fi
 
 LDFLAGS="$LDFLAGS -lpthread"

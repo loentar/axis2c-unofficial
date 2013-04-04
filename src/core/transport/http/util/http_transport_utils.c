@@ -44,6 +44,10 @@
 #include <axiom_mime_part.h>
 #include <axutil_class_loader.h>
 
+#ifdef AXIS2_JSON_ENABLED
+#include <axis2_json_reader.h>
+#endif
+
 #define AXIOM_MIME_BOUNDARY_BYTE 45
 
 /** Size of the buffer to be used when reading a file */
@@ -303,7 +307,6 @@ axis2_http_transport_utils_process_http_post_request(
     axutil_property_t *http_error_property = NULL;
     axiom_mime_parser_t *mime_parser = NULL;
     axis2_bool_t is_svc_callback = AXIS2_FALSE;
-
 
     AXIS2_PARAM_CHECK(env->error, msg_ctx, AXIS2_FAILURE);
     AXIS2_PARAM_CHECK(env->error, in_stream, AXIS2_FAILURE);
@@ -588,19 +591,57 @@ axis2_http_transport_utils_process_http_post_request(
 
     char_set_str =
         axis2_http_transport_utils_get_charset_enc(env, content_type);
+
+    axis2_msg_ctx_set_charset_encoding(msg_ctx, env, char_set_str);
+
+#ifdef AXIS2_JSON_ENABLED
+    if (strstr(content_type, AXIS2_HTTP_HEADER_ACCEPT_JSON))
+    {
+        axis2_json_reader_t* json_reader = NULL;
+        axiom_soap_body_t* soap_body = NULL;
+        axiom_node_t* root_node = NULL;
+
+        json_reader = axis2_json_reader_create_for_stream(env, in_stream);
+        if (!json_reader)
+        {
+            return AXIS2_FAILURE;
+        }
+
+        status = axis2_json_reader_read(json_reader, env);
+        if (status != AXIS2_SUCCESS)
+        {
+            return status;
+        }
+
+        root_node = axis2_json_reader_get_root_node(json_reader, env);
+        if (!root_node)
+        {
+            return AXIS2_FAILURE;
+        }
+
+        axis2_json_reader_free(json_reader, env);
+
+        soap_envelope =
+                axiom_soap_envelope_create_default_soap_envelope(env, AXIOM_SOAP11);
+        soap_body = axiom_soap_envelope_get_body(soap_envelope, env);
+        axiom_soap_body_add_child(soap_body, env, root_node);
+        axis2_msg_ctx_set_doing_json(msg_ctx, env, AXIS2_TRUE);
+        axis2_msg_ctx_set_doing_rest(msg_ctx, env, AXIS2_TRUE);
+        axis2_msg_ctx_set_rest_http_method(msg_ctx, env, AXIS2_HTTP_POST);
+    }
+    else
+    {
+#endif
     xml_reader =
         axiom_xml_reader_create_for_io(env,
                                        axis2_http_transport_utils_on_data_request,
                                        NULL, (void *) callback_ctx,
                                        axutil_string_get_buffer(char_set_str,
                                                                 env));
-
     if (!xml_reader)
     {
         return AXIS2_FAILURE;
     }
-
-    axis2_msg_ctx_set_charset_encoding(msg_ctx, env, char_set_str);
 
     om_builder = axiom_stax_builder_create(env, xml_reader);
     if (!om_builder)
@@ -705,6 +746,9 @@ axis2_http_transport_utils_process_http_post_request(
             }
         }
     }
+#ifdef AXIS2_JSON_ENABLED
+    }
+#endif
 
     if (do_rest)
     {
@@ -1062,6 +1106,46 @@ axis2_http_transport_utils_process_http_put_request(
 
     char_set_str =
         axis2_http_transport_utils_get_charset_enc(env, content_type);
+    axis2_msg_ctx_set_charset_encoding(msg_ctx, env, char_set_str);
+
+#ifdef AXIS2_JSON_ENABLED
+    if (strstr(content_type, AXIS2_HTTP_HEADER_ACCEPT_JSON))
+    {
+        axis2_json_reader_t* json_reader = NULL;
+        axiom_soap_body_t* soap_body = NULL;
+        axiom_node_t* root_node = NULL;
+
+        json_reader = axis2_json_reader_create_for_stream(env, in_stream);
+        if (!json_reader)
+        {
+            return AXIS2_FAILURE;
+        }
+
+        status = axis2_json_reader_read(json_reader, env);
+        if (status != AXIS2_SUCCESS)
+        {
+            return status;
+        }
+
+        root_node = axis2_json_reader_get_root_node(json_reader, env);
+        if (!root_node)
+        {
+            return AXIS2_FAILURE;
+        }
+
+        axis2_json_reader_free(json_reader, env);
+
+        soap_envelope =
+                axiom_soap_envelope_create_default_soap_envelope(env, AXIOM_SOAP11);
+        soap_body = axiom_soap_envelope_get_body(soap_envelope, env);
+        axiom_soap_body_add_child(soap_body, env, root_node);
+        axis2_msg_ctx_set_doing_json(msg_ctx, env, AXIS2_TRUE);
+        axis2_msg_ctx_set_doing_rest(msg_ctx, env, AXIS2_TRUE);
+        axis2_msg_ctx_set_rest_http_method(msg_ctx, env, AXIS2_HTTP_PUT);
+    }
+    else
+    {
+#endif
     xml_reader =
         axiom_xml_reader_create_for_io(env,
                                        axis2_http_transport_utils_on_data_request,
@@ -1139,6 +1223,9 @@ axis2_http_transport_utils_process_http_put_request(
         axis2_msg_ctx_set_property(msg_ctx, env, AXIS2_HTTP_TRANSPORT_ERROR,
                                    http_error_property);
     }
+#ifdef AXIS2_JSON_ENABLED
+    }
+#endif
 
     if (do_rest)
     {
@@ -1289,6 +1376,14 @@ axis2_http_transport_utils_process_http_head_request(
     axis2_msg_ctx_set_to(msg_ctx, env, axis2_endpoint_ref_create(env,
                                                                  request_uri));
     axis2_msg_ctx_set_server_side(msg_ctx, env, AXIS2_TRUE);
+
+#ifdef AXIS2_JSON_ENABLED
+    if (strstr(content_type, AXIS2_HTTP_HEADER_ACCEPT_JSON))
+    {
+        axis2_msg_ctx_set_doing_json(msg_ctx, env, AXIS2_TRUE);
+    }
+    else
+#endif
     if (strstr(content_type, AXIS2_HTTP_HEADER_ACCEPT_TEXT_XML))
     {
         if (soap_action_header)
@@ -1352,6 +1447,14 @@ axis2_http_transport_utils_process_http_get_request(
     axis2_msg_ctx_set_to(msg_ctx, env, axis2_endpoint_ref_create(env,
                                                                  request_uri));
     axis2_msg_ctx_set_server_side(msg_ctx, env, AXIS2_TRUE);
+
+#ifdef AXIS2_JSON_ENABLED
+    if (strstr(content_type, AXIS2_HTTP_HEADER_ACCEPT_JSON))
+    {
+        axis2_msg_ctx_set_doing_json(msg_ctx, env, AXIS2_TRUE);
+    }
+    else
+#endif
     if (content_type && strstr(content_type, AXIS2_HTTP_HEADER_ACCEPT_TEXT_XML))
     {
         if (soap_action_header)
@@ -1417,6 +1520,14 @@ axis2_http_transport_utils_process_http_delete_request(
     axis2_msg_ctx_set_to(msg_ctx, env, axis2_endpoint_ref_create(env,
                                                                  request_uri));
     axis2_msg_ctx_set_server_side(msg_ctx, env, AXIS2_TRUE);
+
+#ifdef AXIS2_JSON_ENABLED
+    if (strstr(content_type, AXIS2_HTTP_HEADER_ACCEPT_JSON))
+    {
+        axis2_msg_ctx_set_doing_json(msg_ctx, env, AXIS2_TRUE);
+    }
+    else
+#endif
     if (strstr(content_type, AXIS2_HTTP_HEADER_ACCEPT_TEXT_XML))
     {
         if (soap_action_header)
@@ -3651,3 +3762,4 @@ AXIS2_EXTERN axis2_bool_t AXIS2_CALL axis2_http_transport_utils_is_callback_requ
     return is_required;
 
 }
+

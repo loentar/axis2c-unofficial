@@ -49,7 +49,7 @@ AC_CHECK_LIB(z, inflate)
 #CFLAGS="$CFLAGS -ansi -Wall -D_LARGEFILE64_SOURCE -Wno-implicit-function-declaration"
 CFLAGS="$CFLAGS -D_LARGEFILE64_SOURCE"
 if test "$GCC" = "yes"; then
-    CFLAGS="$CFLAGS -ansi -Wall -Wno-implicit-function-declaration "
+    CFLAGS="$CFLAGS -ansi -Wall -Wno-implicit-function-declaration -Wno-unused-but-set-variable -g -O0"
 fi
 
 LDFLAGS="$LDFLAGS -lpthread"
