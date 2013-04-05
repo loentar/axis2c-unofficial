@@ -928,6 +928,27 @@ extern "C"
 #define AXIS2_SSL_PASSPHRASE "SSL_PASSPHRASE"
 
     /**
+     * Constant for SSL verify server host property name
+     *
+     * 2 - certificate name must match intended host name
+     * 1 - certificate must have any Common Name
+     * 0 - do not check certificate name
+     *
+     * Only used with libcurl.
+     */
+#define AXIS2_SSL_VERIFY_HOST "SSL_VERIFY_HOST"
+
+    /**
+     * Constant for SSL verify server certificate property name
+     *
+     * AXIS2_TRUE - verify certificate is authentic
+     * AXIS2_FALSE - do not check certificate
+     *
+     * Only used with libcurl.
+     */
+#define AXIS2_SSL_VERIFY_PEER "SSL_VERIFY_PEER"
+
+    /**
      * HTTP authentication username property name
      */
 #define AXIS2_HTTP_AUTH_UNAME "HTTP_AUTH_USERNAME"
@@ -947,8 +968,23 @@ extern "C"
       */
 #define AXIS2_PROXY_AUTH_PASSWD "PROXY_AUTH_PASSWD"
 
+    /**
+     * NTLM authentication domain property name
+     */
+#define AXIS2_NTLM_AUTH_DOMAIN "NTLM_AUTH_DOMAIN"
 
-    /*#define AXIS2_HTTP_AUTH_TYPE "HTTP_AUTH_TYPE"*/
+    /**
+     * NTLM authentication workstation property name
+     */
+#define AXIS2_NTLM_AUTH_WORKSTATION "NTLM_AUTH_WORKSTATION"
+
+    /**
+     * NTLM authentication flags property name
+     */
+#define AXIS2_NTLM_AUTH_FLAGS "NTLM_AUTH_FLAGS"
+
+
+/*#define AXIS2_HTTP_AUTH_TYPE "HTTP_AUTH_TYPE"*/
 
     /**
      * HTTP "Basic" authentication
@@ -960,6 +996,28 @@ extern "C"
      */
 #define AXIS2_HTTP_AUTH_TYPE_DIGEST "Digest"
 
+
+    /**
+     * HTTP "GSS-Negotiate" authentication
+     */
+#define AXIS2_HTTP_AUTH_TYPE_GSSNEGOTIATE "GSS-Negotiate"
+
+    /**
+     * HTTP "NTLM" authentication
+     */
+#define AXIS2_HTTP_AUTH_TYPE_NTLM "NTLM"
+
+    /**
+     * Any HTTP authentication
+     */
+#define AXIS2_HTTP_AUTH_TYPE_ANY "Any"
+
+    /**
+     * Any HTTP authentication except Basic
+     */
+#define AXIS2_HTTP_AUTH_TYPE_ANYSAFE "AnySafe"
+
+
     /**
       * Proxy "Basic" authentication
       */
@@ -969,6 +1027,12 @@ extern "C"
       * Proxy "Digest" authentication
       */
 #define AXIS2_PROXY_AUTH_TYPE_DIGEST "Digest"
+
+
+    /**
+      * Proxy "NTLM" authentication
+      */
+#define AXIS2_PROXY_AUTH_TYPE_NTLM "NTLM"
 
 
     /**

@@ -73,6 +73,18 @@ extern "C"
     /**
      * @param header pointer to header
      * @param env pointer to environment struct
+     * @param value header value
+     */
+    AXIS2_EXTERN void AXIS2_CALL
+    axis2_http_header_set_value(
+        axis2_http_header_t * header,
+        const axutil_env_t * env,
+        const axis2_char_t *value);
+
+
+    /**
+     * @param header pointer to header
+     * @param env pointer to environment struct
      * @return void
      */
     AXIS2_EXTERN void AXIS2_CALL
