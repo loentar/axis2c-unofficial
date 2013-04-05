@@ -190,10 +190,12 @@ axis2_json_read_node(
 
     axiom_element_create(env, NULL, name, NULL, om_node);
 
-    json_object_object_foreach(parent, child_name, child_object)
     {
-        if (axis2_json_read_child_node(child_object, child_name, *om_node, env) != AXIS2_SUCCESS)
-            return AXIS2_FAILURE;
+        json_object_object_foreach(parent, child_name, child_object)
+        {
+            if (axis2_json_read_child_node(child_object, child_name, *om_node, env) != AXIS2_SUCCESS)
+                return AXIS2_FAILURE;
+        }
     }
 
     return AXIS2_SUCCESS;
@@ -306,11 +308,13 @@ axis2_json_reader_read(
     reader->axiom_node = NULL;
 
     /* get first child */
-    json_object_object_foreach(reader->json_obj, key, value)
     {
-        json_root = value;
-        json_root_name = key;
-        break;
+        json_object_object_foreach(reader->json_obj, key, value)
+        {
+            json_root = value;
+            json_root_name = key;
+            break;
+        }
     }
 
     if (!json_root || !json_root_name)

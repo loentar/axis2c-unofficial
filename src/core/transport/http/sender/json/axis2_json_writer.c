@@ -168,10 +168,11 @@ axis2_json_writer_get_json_string(
         const axutil_env_t* env,
         int* json_string_length)
 {
-    (void)env;
     const axis2_char_t* result =
             (const axis2_char_t*)json_object_to_json_string_ext(writer->json_obj,
                                                                JSON_C_TO_STRING_PLAIN);
+    (void)env;
+
     if (json_string_length)
         *json_string_length = strlen(result);
 

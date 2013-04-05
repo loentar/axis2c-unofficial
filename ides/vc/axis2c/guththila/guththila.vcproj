@@ -216,6 +216,10 @@
 				RelativePath="..\..\..\..\guththila\src\guththila_xml_writer.c"
 				>
 			</File>
+			<File
+				RelativePath="..\..\..\..\guththila\src\guththila_utf8.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -260,6 +264,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\guththila\include\guththila_xml_writer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\guththila\include\guththila_utf8.h"
 				>
 			</File>
 		</Filter>

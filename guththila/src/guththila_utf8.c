@@ -122,9 +122,10 @@ GUTHTHILA_EXPORT int GUTHTHILA_CALL guththila_utf8_decoder_decode(
     int *code_point,
     const axutil_env_t * env)
 {
+    unsigned int inbyte;
     decoder->error_bytes = 0;
     decoder->used_buffer[decoder->used_bytes] = inchar;
-    unsigned int inbyte = (unsigned char) inchar;
+    inbyte = (unsigned char) inchar;
     if (inbyte < 0x0080) /* 0x0080=128: 0xxx xxxx */
     {
         if (decoder->remaining_bytes > 0)
