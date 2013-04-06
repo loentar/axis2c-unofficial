@@ -5,5 +5,5 @@ EXTRA_DIST = services.xml mtom.mk mtom.h
 noinst_HEADERS = mtom.h
 SUBDIRS =
 libmtom_la_SOURCES = mtom.c mtom_skeleton.c
-libmtom_la_LIBADD  =
+libmtom_la_LIBADD  = -L$(AXIS2C_HOME)/lib -laxis2_axiom -laxis2_engine -laxutil
 INCLUDES = @AXIS2INC@

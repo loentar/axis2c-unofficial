@@ -5,5 +5,5 @@ EXTRA_DIST = services.xml Calculator.wsdl Calculator.mk calc.h
 noinst_HEADERS = calc.h
 SUBDIRS =
 libCalculator_la_SOURCES = calc.c calc_skeleton.c
-libCalculator_la_LIBADD  =
+libCalculator_la_LIBADD  = -L$(AXIS2C_HOME)/lib -laxis2_axiom -laxis2_engine -laxutil
 INCLUDES = @AXIS2INC@

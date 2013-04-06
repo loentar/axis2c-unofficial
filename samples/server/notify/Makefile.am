@@ -5,5 +5,5 @@ EXTRA_DIST = services.xml notify.mk notify.h
 noinst_HEADERS = notify.h
 SUBDIRS =
 libnotify_la_SOURCES = notify.c notify_skeleton.c
-libnotify_la_LIBADD  =
+libnotify_la_LIBADD  = -L$(AXIS2C_HOME)/lib -laxis2_axiom -laxis2_engine -laxutil
 INCLUDES = @AXIS2INC@

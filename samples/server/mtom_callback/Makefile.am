@@ -5,5 +5,5 @@ EXTRA_DIST = services.xml mtom_callback.mk mtom_callback.h
 noinst_HEADERS = mtom_callback.h
 SUBDIRS =
 libmtom_callback_la_SOURCES = mtom_callback.c mtom_skeleton.c
-libmtom_callback_la_LIBADD  =
+libmtom_callback_la_LIBADD  = -L$(AXIS2C_HOME)/lib -laxis2_axiom -laxis2_engine -laxutil
 INCLUDES = @AXIS2INC@

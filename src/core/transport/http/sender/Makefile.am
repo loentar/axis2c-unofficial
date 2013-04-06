@@ -28,7 +28,7 @@ libaxis2_http_sender_la_SOURCES = http_transport_sender.c \
 								  $(SSL_SOURCES) \
 								  $(LIBCURL_SOURCES)
 
-libaxis2_http_sender_la_LIBADD = $(top_builddir)/src/core/transport/http/common/libaxis2_http_common.la\
+libaxis2_http_sender_la_LIBADD = \
                                  $(top_builddir)/src/core/transport/http/util/libaxis2_http_util.la\
 				 				 $(top_builddir)/axiom/src/om/libaxis2_axiom.la\
 				 				 $(top_builddir)/util/src/libaxutil.la\

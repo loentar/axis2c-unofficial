@@ -1174,7 +1174,7 @@ axis2_http_worker_process_request(
             axis2_http_worker_set_response_headers(http_worker, env, svr_conn,
                                                    simple_request, response, 0);
             axis2_simple_http_svr_conn_write_response(svr_conn, env, response);
-            axis2_http_simple_response_free(response, env);
+/*            axis2_http_simple_response_free(response, env); -- causes double free */
             request_handled = AXIS2_TRUE;
             status = AXIS2_TRUE;
         }

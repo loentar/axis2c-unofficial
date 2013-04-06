@@ -307,6 +307,9 @@ axis2_simple_http_svr_conn_read_request(
             break; 
         }
     }
+
+    AXIS2_FREE(env->allocator, str_line);
+
     return request;
 }
 

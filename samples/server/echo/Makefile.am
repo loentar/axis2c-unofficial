@@ -5,5 +5,5 @@ EXTRA_DIST = services.xml echo.mk echo.h
 noinst_HEADERS = echo.h
 SUBDIRS =
 libecho_la_SOURCES = echo.c echo_skeleton.c
-libecho_la_LIBADD  =
+libecho_la_LIBADD  = -L$(AXIS2C_HOME)/lib -laxis2_axiom -laxis2_engine -laxutil
 INCLUDES = @AXIS2INC@

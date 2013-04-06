@@ -17,7 +17,7 @@ axis2_echoFloatArray.c          axis2_echoStringArrayResponse.c   axis2_SOAPStru
 axis2_echoFloatArrayResponse.c  axis2_echoString.c \
 axis2_echoFloat.c               axis2_echoStringResponse.c
 
-libInteropTestPortTypeDocService_la_LIBADD  =
+libInteropTestPortTypeDocService_la_LIBADD  = -L$(AXIS2C_HOME)/lib -laxis2_axiom -laxis2_engine -laxutil
 INCLUDES = -I$(AXIS2C_HOME)/include \
 			@UTILINC@ \
 			@AXIOMINC@

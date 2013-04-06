@@ -9,3 +9,8 @@ libsub_la_SOURCES = sub.c sub_skeleton.c
 libmul_la_SOURCES = mul.c mul_skeleton.c
 libdiv_la_SOURCES = div.c div_skeleton.c
 INCLUDES = @AXIS2INC@
+
+libadd_la_LIBADD = -L$(AXIS2C_HOME)/lib -laxis2_axiom -laxis2_engine -laxutil
+libsub_la_LIBADD = -L$(AXIS2C_HOME)/lib -laxis2_axiom -laxis2_engine -laxutil
+libmul_la_LIBADD = -L$(AXIS2C_HOME)/lib -laxis2_axiom -laxis2_engine -laxutil
+libdiv_la_LIBADD = -L$(AXIS2C_HOME)/lib -laxis2_axiom -laxis2_engine -laxutil

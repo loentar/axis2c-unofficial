@@ -11,7 +11,17 @@ libaxis2_engine_la_SOURCES= ../transport/transport_receiver.c handler.c \
                         	soap_action_disp.c \
                         	soap_body_disp.c \
                         	ctx_handler.c \
-                        	engine.c
+                        	engine.c \
+                        ../transport/http/common/http_header.c\
+                        ../transport/http/common/http_out_transport_info.c\
+                        ../transport/http/common/http_request_line.c\
+                        ../transport/http/common/http_simple_request.c\
+                        ../transport/http/common/http_simple_response.c\
+                        ../transport/http/common/http_status_line.c\
+                        ../transport/http/common/http_accept_record.c\
+                        ../transport/http/common/http_response_writer.c\
+                        ../transport/http/common/simple_http_svr_conn.c\
+                        ../transport/http/common/http_worker.c
 
 libaxis2_engine_la_LDFLAGS = -version-info $(VERSION_NO)
 
@@ -26,7 +36,7 @@ libaxis2_engine_la_LIBADD=$(top_builddir)/src/core/description/libaxis2_descript
 					$(top_builddir)/util/src/libaxutil.la \
 					$(top_builddir)/neethi/src/libneethi.la \
 					$(top_builddir)/axiom/src/om/libaxis2_axiom.la 
-libaxis2_engine_la_LIBADD+=$(top_builddir)/src/core/transport/http/common/libaxis2_http_common.la \
+libaxis2_engine_la_LIBADD+=\
 			   $(top_builddir)/src/core/transport/http/util/libaxis2_http_util.la
 
 

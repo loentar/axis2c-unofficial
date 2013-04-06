@@ -5,5 +5,5 @@ EXTRA_DIST = services.xml math.mk math.h
 noinst_HEADERS = math.h
 SUBDIRS =
 libmath_la_SOURCES = math.c math_skeleton.c
-libmath_la_LIBADD  =
+libmath_la_LIBADD  = -L$(AXIS2C_HOME)/lib -laxis2_axiom -laxis2_engine -laxutil
 INCLUDES = @AXIS2INC@

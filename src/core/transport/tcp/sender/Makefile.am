@@ -2,7 +2,7 @@ lib_LTLIBRARIES = libaxis2_tcp_sender.la
 
 libaxis2_tcp_sender_la_SOURCES = tcp_transport_sender.c
 
-libaxis2_tcp_sender_la_LIBADD = $(top_builddir)/src/core/transport/http/common/libaxis2_http_common.la\
+libaxis2_tcp_sender_la_LIBADD = \
                                  $(top_builddir)/src/core/transport/http/util/libaxis2_http_util.la\
 				 			 $(top_builddir)/axiom/src/om/libaxis2_axiom.la\
 				 				 $(top_builddir)/util/src/libaxutil.la\

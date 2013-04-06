@@ -1,6 +1,6 @@
 lib_LTLIBRARIES = libaxis2_http_common.la
 
-libaxis2_http_common_la_LIBADD=$(top_builddir)/util/src/libaxutil.la\
+libaxis2_http_common_la_LIBADD=$(top_builddir)/util/src/libaxutil.la ../../../context/libaxis2_context.la ../../../description/libaxis2_description.la\
                                  $(top_builddir)/src/core/transport/http/util/libaxis2_http_util.la
 
 libaxis2_http_common_la_SOURCES = http_header.c\

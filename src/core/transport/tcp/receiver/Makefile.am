@@ -1,6 +1,5 @@
 lib_LTLIBRARIES = libaxis2_tcp_receiver.la
-libaxis2_tcp_receiver_la_LIBADD=$(top_builddir)/util/src/libaxutil.la\
-                                 $(top_builddir)/src/core/transport/http/common/libaxis2_http_common.la
+libaxis2_tcp_receiver_la_LIBADD=$(top_builddir)/util/src/libaxutil.la
 
 
 libaxis2_tcp_receiver_la_SOURCES = tcp_svr_thread.c \
