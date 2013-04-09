@@ -46,6 +46,8 @@ dnl Checks for libraries.
 AC_CHECK_LIB(dl, dlopen)
 AC_CHECK_LIB(z, inflate)
 AC_CHECK_LIB(socket, socket)
+AC_CHECK_LIB(pthread, pthread_join)
+
 
 dnl This can be removed when the ftime call in 
 dnl ./util/src/platforms/unix/date_time_util_unix.c 
@@ -55,9 +57,8 @@ AC_CHECK_LIB(compat, ftime)
 #CFLAGS="$CFLAGS -ansi -Wall -D_LARGEFILE64_SOURCE -Wno-implicit-function-declaration"
 CFLAGS="$CFLAGS -D_LARGEFILE64_SOURCE"
 if test "$GCC" = "yes"; then
-    CFLAGS="$CFLAGS -ansi -Wall -Wno-implicit-function-declaration -Wno-unused-but-set-variable -D_GNU_SOURCE -g -O0"
+    CFLAGS="$CFLAGS -ansi -Wall -Wno-implicit-function-declaration -D_GNU_SOURCE -g -O0"
 fi
-LDFLAGS="$LDFLAGS -lpthread"
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -128,10 +129,18 @@ alpha*)
   ;;
 esac
 
+PLATFORM=unix
+
 case "${host_os}" in
 cygwin)
   cygwin=yes
   no_undefined=yes
+  ;;
+mingw*)
+  PLATFORM=windows
+  CFLAGS="$CFLAGS -DWIN32 -D_WINDOWS -D_MBCS -DAXIS2_DECLARE_EXPORT -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS"
+  LIBS="$LIBS -lrpcrt4 -lws2_32 -lkernel32"
+  LDFLAGS="$LDFLAGS -no-undefined"
   ;;
 darwin*)
   darwin=yes
@@ -243,19 +252,33 @@ UTILINC=$axis2_utilinc
 ZLIBINC=$zlibinc
 ZLIBLIBS=$zliblibs
 VERSION_NO="6:0:6"
+VERSION_INFO="-version-info ${VERSION_NO}"
+
+case $host in
+  *mingw*)
+    VERSION_INFO="-avoid-version"
+  ;;
+  *)
+    test "$GCC" = "yes" && CFLAGS="$CFLAGS -Wno-unused-but-set-variable"
+  ;;
+esac
 
 AC_SUBST(VERSION_NO)
+AC_SUBST(VERSION_INFO)
 AC_SUBST(UTILINC)
 AC_SUBST(ZLIBINC)
 AC_SUBST(ZLIBLIBS)
 AC_SUBST(ZLIBBUILD)
+AC_SUBST(PLATFORM)
 AC_SUBST(GUTHTHILA_DIR)
 AC_SUBST(GUTHTHILA_LIBS)
 AC_SUBST(TESTDIR)
 
 AC_CONFIG_FILES([Makefile \
     src/Makefile \
+    src/platforms/Makefile \
     src/platforms/unix/Makefile \
+    src/platforms/windows/Makefile \
     src/minizip/Makefile \
     include/Makefile \
     test/Makefile \

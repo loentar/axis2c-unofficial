@@ -48,3 +48,4 @@ install-data-hook:
 	cp -r docs $(docsdir)
 	rm -rf `find $(docsdir)/ -type d -name .svn`
 	rm $(docsdir)/README
+	for d in $(datadir)/lib $(datadir)/modules/*; do rm -f $$d/*.a; done

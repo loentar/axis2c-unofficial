@@ -14,12 +14,13 @@
  *  limitations under the License.
  */
 
+#include <axutil_utils_defines.h>
 #include <axutil_stream.h>
 #include <axiom_node.h>
 #include <axiom_element.h>
 #include <axiom_attribute.h>
 #include <json.h>
-#include "axis2_json_reader.h"
+#include <axis2_json_reader.h>
 
 #define AXIS2_JSON_XSI_URI "http://www.w3.org/2001/XMLSchema-instance"
 

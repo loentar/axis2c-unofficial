@@ -11,7 +11,7 @@ libaxis2_mod_log_la_LIBADD =  \
 					$(top_builddir)/axiom/src/om/libaxis2_axiom.la\
 			      		$(top_builddir)/src/core/engine/libaxis2_engine.la
 
-libaxis2_mod_log_la_LDFLAGS = -version-info $(VERSION_NO)
+libaxis2_mod_log_la_LDFLAGS = $(VERSION_INFO)
 
 INCLUDES = -I$(top_builddir)/include \
             -I$(top_builddir)/src/core/description \

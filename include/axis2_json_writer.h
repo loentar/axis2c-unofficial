@@ -17,15 +17,15 @@
 #ifndef AXIS2_JSON_WRITER_H
 #define AXIS2_JSON_WRITER_H
 
-#include <axutil_utils.h>
+#include <axutil_utils_defines.h>
+#include <axiom_node.h>
+#include <axutil_env.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-typedef struct axiom_node axiom_node_t;
-typedef struct axutil_env axutil_env_t;
 typedef struct axis2_json_writer axis2_json_writer_t;
 
 /**

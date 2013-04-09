@@ -11,7 +11,7 @@ libaxis2_qpid_receiver_la_LIBADD = $(top_builddir)/util/src/libaxutil.la \
 								   $(top_builddir)/src/core/transport/amqp/util/libaxis2_amqp_util.la \
 								   $(top_builddir)/src/core/transport/amqp/receiver/qpid_receiver/request_processor/libaxis2_amqp_request_processor.la
 
-libaxis2_qpid_receiver_la_LDFLAGS = g++ -version-info $(VERSION_NO)
+libaxis2_qpid_receiver_la_LDFLAGS = g++ $(VERSION_INFO)
 
 INCLUDES = -I$(top_builddir)/include \
 	       -I$(top_builddir)/src/core/transport/amqp/receiver/qpid_receiver \

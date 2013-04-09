@@ -24,7 +24,7 @@
 
 /*dirent.h style mehtods for win32*/
 
-AXIS2_DIR *AXIS2_CALL
+AXIS2_EXTERN AXIS2_DIR *AXIS2_CALL
 axis2_opendir(
     const char *_dirname)
 {
@@ -66,7 +66,7 @@ axis2_opendir(
     return dirp;
 }
 
-int AXIS2_CALL
+AXIS2_EXTERN int AXIS2_CALL
 axis2_closedir(
     AXIS2_DIR * _dirp)
 {
@@ -82,7 +82,7 @@ axis2_closedir(
     return iret;
 }
 
-struct dirent *AXIS2_CALL
+AXIS2_EXTERN struct dirent *AXIS2_CALL
 axis2_readdir(
     AXIS2_DIR * _dirp)
 {
@@ -107,7 +107,7 @@ axis2_readdir(
     return &(_dirp->dent);
 }
 
-int AXIS2_CALL
+AXIS2_EXTERN int AXIS2_CALL
 axis2_readdir_r(
     AXIS2_DIR * _dirp,
     struct dirent *_entry,
@@ -142,7 +142,7 @@ axis2_readdir_r(
     return 0;
 }
 
-int AXIS2_CALL
+AXIS2_EXTERN int AXIS2_CALL
 axis2_rewinddir(
     AXIS2_DIR * dirp)
 {
@@ -182,7 +182,13 @@ alphasort(
     return strcoll((*__d1)->d_name, (*__d2)->d_name);
 }
 
-int AXIS2_CALL
+#if defined(__MINGW32__)
+# define AXUTIL_DIR_FN_CAST (int (*)(const void *, const void*))
+#else
+# define AXUTIL_DIR_FN_CAST
+#endif
+
+AXIS2_EXTERN int AXIS2_CALL
 axis2_scandir(
     const char *_dirname,
     struct dirent **__namelist[],
@@ -266,7 +272,7 @@ axis2_scandir(
 
     if (compare)
     {
-        qsort(*__namelist, nfiles, sizeof(struct dirent *), compare);
+        qsort(*__namelist, nfiles, sizeof(struct dirent *), AXUTIL_DIR_FN_CAST compare);
     }
 
     return nfiles;

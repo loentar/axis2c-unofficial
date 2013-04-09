@@ -46,9 +46,9 @@ fi
 
 dnl Checks for libraries.
 AC_CHECK_LIB(dl, dlopen)
+AC_CHECK_LIB(pthread, pthread_join)
 
 CFLAGS="$CFLAGS -ansi -Wall -D_LARGEFILE64_SOURCE -Wno-implicit-function-declaration"
-LDFLAGS="$LDFLAGS -lpthread"
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -109,6 +109,16 @@ AC_ARG_WITH(axis2,
 APACHE2INC=$apache2inc
 AXIS2INC=$axis2inc
 APRINC=$aprinc
+
+
+case $host in
+  *mingw*)
+    VERSION_INFO="-avoid-version"
+    CFLAGS="$CFLAGS -DWIN32 -D_WINDOWS -D_MBCS -DAXIS2_DECLARE_EXPORT -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS"
+    LDFLAGS="$LDFLAGS -no-undefined"
+  ;;
+esac
+
 
 AC_SUBST(APACHE2INC)
 AC_SUBST(APRINC)

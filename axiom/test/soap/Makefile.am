@@ -2,7 +2,6 @@ TESTS = test_soap
 noinst_PROGRAMS = test_soap
 check_PROGRAMS = test_soap
 SUBDIRS =
-AM_CFLAGS = -g -O2 -pthread
 test_soap_SOURCES = test_soap.c
 
 test_soap_LDADD   =	../../../util/src/libaxutil.la \

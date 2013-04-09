@@ -88,6 +88,12 @@ dummy_worker(
     return thd->func(thd, thd->data);
 }
 
+#if defined(__MINGW32__)
+# define AXUTIL_THREAD_FN_CAST (LPTHREAD_START_ROUTINE)
+#else
+# define AXUTIL_THREAD_FN_CAST (unsigned long (AXIS2_THREAD_FUNC *) (void *))
+#endif
+
 AXIS2_EXTERN axutil_thread_t *AXIS2_CALL
 axutil_thread_create(
     axutil_allocator_t * allocator,
@@ -117,8 +123,7 @@ axutil_thread_create(
     if ((handle =
          CreateThread(NULL, attr &&
                       attr->stacksize > 0 ? attr->stacksize : 0,
-                      (unsigned long (AXIS2_THREAD_FUNC *) (void *))
-                      dummy_worker, new, 0, &temp)) == 0)
+                      AXUTIL_THREAD_FN_CAST dummy_worker, new, 0, &temp)) == 0)
     {
         return NULL;
     }

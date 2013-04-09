@@ -47,14 +47,14 @@ fi
 
 dnl Checks for libraries.
 AC_CHECK_LIB(dl, dlopen)
+AC_CHECK_LIB(pthread, pthread_join)
 
 CFLAGS="$CFLAGS -D_LARGEFILE64_SOURCE -DAXIS2_GUTHTHILA_ENABLED"
 
 if test "$GCC" = "yes"; then
-    CFLAGS="$CFLAGS -ansi -g -O0 -Wall -Wno-implicit-function-declaration -Wno-unused-but-set-variable "
+    CFLAGS="$CFLAGS -ansi -g -O0 -Wall -Wno-implicit-function-declaration"
 fi
 
-LDFLAGS="$LDFLAGS -lpthread"
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -71,9 +71,23 @@ AC_FUNC_REALLOC
 
 UTILINC=$axis2_utilinc
 VERSION_NO="6:0:6"
+VERSION_INFO="-version-info ${VERSION_NO}"
+
+case $host in
+  *mingw*)
+    VERSION_INFO="-avoid-version"
+    CFLAGS="$CFLAGS -DWIN32 -D_WINDOWS -D_MBCS -DAXIS2_DECLARE_EXPORT -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS"
+    LDFLAGS="$LDFLAGS -no-undefined"
+  ;;
+  *)
+    test "$GCC" = "yes" && CFLAGS="$CFLAGS -Wno-unused-but-set-variable"
+  ;;
+esac
+
 
 AC_SUBST(UTILINC)
 AC_SUBST(VERSION_NO)
+AC_SUBST(VERSION_INFO)
 
 AC_CONFIG_FILES([Makefile \
     src/Makefile \

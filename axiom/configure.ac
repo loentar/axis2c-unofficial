@@ -45,14 +45,14 @@ fi
 dnl Checks for libraries.
 AC_CHECK_LIB(dl, dlopen)
 AC_CHECK_LIB(z, inflate)
+AC_CHECK_LIB(pthread, pthread_join)
 
 #CFLAGS="$CFLAGS -ansi -Wall -D_LARGEFILE64_SOURCE -Wno-implicit-function-declaration"
 CFLAGS="$CFLAGS -D_LARGEFILE64_SOURCE"
 if test "$GCC" = "yes"; then
-    CFLAGS="$CFLAGS -ansi -Wall -Wno-implicit-function-declaration -Wno-unused-but-set-variable -g -O0"
+    CFLAGS="$CFLAGS -ansi -Wall -Wno-implicit-function-declaration -g -O0"
 fi
 
-LDFLAGS="$LDFLAGS -lpthread"
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -150,8 +150,23 @@ AC_ARG_ENABLE(tests, [  --enable-tests    build tests. default=no],
 PKG_PROG_PKG_CONFIG(0.15)
 CFLAGS="$CFLAGS $GUTHTHILA_CFLAGS"
 VERSION_NO="6:0:6"
+VERSION_INFO="-version-info ${VERSION_NO}"
+
+case $host in
+  *mingw*)
+    VERSION_INFO="-avoid-version"
+    CFLAGS="$CFLAGS -DWIN32 -D_WINDOWS -D_MBCS -DAXIS2_DECLARE_EXPORT -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS"
+    LDFLAGS="$LDFLAGS -no-undefined"
+  ;;
+  *)
+    test "$GCC" = "yes" && CFLAGS="$CFLAGS -Wno-unused-but-set-variable"
+  ;;
+esac
+
+
 
 AC_SUBST(VERSION_NO)
+AC_SUBST(VERSION_INFO)
 AC_SUBST(LIBXML2_CFLAGS)
 AC_SUBST(LIBXML2_LIBS)
 AC_SUBST(WRAPPER_DIR)

@@ -23,6 +23,9 @@
 #include <axutil_error.h>
 #include <axutil_env.h>
 #include <stdlib.h>
+#ifdef __MINGW32__
+#include <inttypes.h>
+#endif
 
 #ifdef __cplusplus
 extern "C"

@@ -7,8 +7,8 @@ libaxis2_parser_la_SOURCES = ../xml_reader.c ../xml_writer.c \
 libaxis2_parser_la_LIBADD = @LIBXML2_LIBS@ \
 							../../../../util/src/libaxutil.la
 
-libaxis2_parser_la_LDFLAGS = -version-info $(VERSION_NO)
-libaxis2_libxml2_la_LDFLAGS = -version-info $(VERSION_NO)
+libaxis2_parser_la_LDFLAGS = $(VERSION_INFO)
+libaxis2_libxml2_la_LDFLAGS = $(VERSION_INFO)
 
 
 INCLUDES = -I$(top_builddir)/include \

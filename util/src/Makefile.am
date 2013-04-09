@@ -1,4 +1,4 @@
-SUBDIRS = platforms/unix @ZLIBBUILD@
+SUBDIRS = platforms @ZLIBBUILD@
 lib_LTLIBRARIES = libaxutil.la
 libaxutil_la_SOURCES = hash.c \
                         allocator.c \
@@ -39,12 +39,12 @@ libaxutil_la_SOURCES = hash.c \
 			md5.c \
 			http_chunked_stream.c \
                         digest_calc.c 
-                        
-libaxutil_la_LIBADD =	$(top_builddir)/src/platforms/unix/libaxis2_unix.la \
+
+libaxutil_la_LIBADD = $(top_builddir)/src/platforms/@PLATFORM@/libaxis2_@PLATFORM@.la \
 			@ZLIBLIBS@
 
-libaxutil_la_LDFLAGS = -version-info $(VERSION_NO)
+libaxutil_la_LDFLAGS = $(VERSION_INFO)
 
 INCLUDES = -I$(top_builddir)/include
 
-EXTRA_DIST=platforms/windows string_util.c
+EXTRA_DIST = string_util.c

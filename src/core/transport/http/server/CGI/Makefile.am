@@ -1,7 +1,6 @@
 prgbindir=$(bindir)
 prgbin_PROGRAMS = axis2.cgi
 SUBDIRS =
-AM_CFLAGS = -g -pthread
 axis2_cgi_SOURCES = axis2_cgi_main.c \
 							axis2_cgi_out_transport_info.c \
 							axis2_cgi_stream.c
@@ -17,9 +16,8 @@ axis2_cgi_LDADD   =  $(LDFLAGS) \
 			     $(top_builddir)/src/core/clientapi/libaxis2_clientapi.la \
 			     $(top_builddir)/src/core/engine/libaxis2_engine.la \
 			     $(top_builddir)/src/core/transport/http/sender/libaxis2_http_sender.la \
-			     $(top_builddir)/src/core/transport/http/receiver/libaxis2_http_receiver.la \
-                            -lpthread
-                    
+			     $(top_builddir)/src/core/transport/http/receiver/libaxis2_http_receiver.la
+
 INCLUDES =  -I$(top_builddir)/include \
             -I$(top_builddir)/src/core/description\
             -I$(top_builddir)/src/core/context \

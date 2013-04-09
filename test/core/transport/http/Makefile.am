@@ -2,7 +2,6 @@ TESTS = test_http_transport
 check_PROGRAMS = test_http_transport
 noinst_PROGRAMS = test_http_transport
 SUBDIRS =
-AM_CFLAGS = -g -pthread
 test_http_transport_SOURCES = test_http_transport.c
 
 test_http_transport_LDADD   =  \

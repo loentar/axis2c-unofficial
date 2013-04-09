@@ -6,3 +6,6 @@ dist-hook:
 	rm -rf `find $(distdir)/ -type d -name .libs`
 
 EXTRA_DIST=codegen autogen.sh build.sh
+
+install-data-hook:
+	for d in $(prefix)/services/* $(prefix)/samples/lib/*; do rm -f $$d/*.a $$d/*.la; done

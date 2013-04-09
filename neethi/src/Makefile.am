@@ -33,7 +33,7 @@ libneethi_la_LIBADD  = ../../axiom/src/om/libaxis2_axiom.la \
 #					$(top_builddir)/axiom/src/om/libaxis2_axiom.la 
 
 
-libneethi_la_LDFLAGS = -version-info $(VERSION_NO)
+libneethi_la_LDFLAGS = $(VERSION_INFO)
 
 INCLUDES = -I$(top_builddir)/include \
 		-I ../../util/include \

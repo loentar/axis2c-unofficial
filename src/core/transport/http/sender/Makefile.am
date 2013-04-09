@@ -37,7 +37,7 @@ libaxis2_http_sender_la_LIBADD = \
 								 $(SSL_LIBS)
 
 
-libaxis2_http_sender_la_LDFLAGS = -version-info $(VERSION_NO)
+libaxis2_http_sender_la_LDFLAGS = $(VERSION_INFO)
 
 INCLUDES = -I$(top_builddir)/include \
 	       -I$(top_builddir)/src/core/transport\

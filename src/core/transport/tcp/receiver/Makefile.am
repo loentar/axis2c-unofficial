@@ -8,7 +8,7 @@ libaxis2_tcp_receiver_la_SOURCES = tcp_svr_thread.c \
 									tcp_receiver.c
 
 
-libaxis2_tcp_receiver_la_LDFLAGS = -version-info $(VERSION_NO)
+libaxis2_tcp_receiver_la_LDFLAGS = $(VERSION_INFO)
 
 INCLUDES = -I$(top_builddir)/include \
 	       -I$(top_builddir)/src/core/transport\

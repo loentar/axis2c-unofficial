@@ -17,16 +17,16 @@
 #ifndef AXIS2_JSON_READER_H
 #define AXIS2_JSON_READER_H
 
-#include <axutil_utils.h>
+#include <axutil_utils_defines.h>
+#include <axutil_stream.h>
+#include <axiom_node.h>
+#include <axutil_env.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-typedef struct axutil_stream axutil_stream_t;
-typedef struct axiom_node axiom_node_t;
-typedef struct axutil_env axutil_env_t;
 typedef struct axis2_json_reader axis2_json_reader_t;
 
 /**

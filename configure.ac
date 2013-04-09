@@ -46,6 +46,7 @@ dnl Checks for libraries.
 AC_CHECK_LIB(dl, dlopen)
 AC_CHECK_LIB(z, inflate)
 AC_CHECK_LIB(socket, socket)
+AC_CHECK_LIB(pthread, pthread_join)
 
 if test -d $srcdir/util; then
     AC_CONFIG_SUBDIRS(util)
@@ -63,10 +64,9 @@ fi
 CFLAGS="$CFLAGS -D_LARGEFILE64_SOURCE"
 CPPFLAGS="$CPPFLAGS -D_LARGEFILE64_SOURCE"
 if test "$GCC" = "yes"; then
-    CFLAGS="$CFLAGS -ansi -Wall -Wno-implicit-function-declaration -Wno-unused-but-set-variable -g -O0 -D_GNU_SOURCE"
+    CFLAGS="$CFLAGS -ansi -Wall -Wno-implicit-function-declaration -g -O0 -D_GNU_SOURCE"
 #    CFLAGS="$CFLAGS -ansi -Wall -Wno-implicit-function-declaration"
 fi
-LDFLAGS="$LDFLAGS -lpthread"
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -445,9 +445,22 @@ APACHE2INC=$apache2inc
 IKSEMELINC=$iksemelinc
 APRINC=$aprinc
 VERSION_NO="6:0:6"
+VERSION_INFO="-version-info ${VERSION_NO}"
 QPID_HOME=$qpidhome
 
+case $host in
+  *mingw*)
+    VERSION_INFO="-avoid-version"
+    CFLAGS="$CFLAGS -DWIN32 -D_WINDOWS -D_MBCS -DAXIS2_DECLARE_EXPORT -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS"
+    LDFLAGS="$LDFLAGS -no-undefined"
+  ;;
+  *)
+    test "$GCC" = "yes" && CFLAGS="$CFLAGS -Wno-unused-but-set-variable"
+  ;;
+esac
+
 AC_SUBST(VERSION_NO)
+AC_SUBST(VERSION_INFO)
 AC_SUBST(APACHE2INC)
 AC_SUBST(APRINC)
 AC_SUBST(DICLIENT_DIR)

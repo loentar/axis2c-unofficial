@@ -7,7 +7,7 @@ libaxis2_http_receiver_la_SOURCES = http_receiver.c\
                                     http_svr_thread.c
 
 
-libaxis2_http_receiver_la_LDFLAGS = -version-info $(VERSION_NO)
+libaxis2_http_receiver_la_LDFLAGS = $(VERSION_INFO)
 
 INCLUDES = -I$(top_builddir)/include \
 	       -I$(top_builddir)/src/core/transport\

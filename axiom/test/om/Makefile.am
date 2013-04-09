@@ -2,7 +2,6 @@ TESTS =
 noinst_PROGRAMS = test_om
 check_PROGRAMS = test_om
 SUBDIRS =
-AM_CFLAGS = -g -O2 -pthread
 test_om_SOURCES = test_om.c
 
 test_om_LDADD   =	../../../util/src/libaxutil.la \

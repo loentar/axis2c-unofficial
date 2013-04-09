@@ -23,7 +23,6 @@ if test "$GCC" = "yes"; then
     CFLAGS="$CFLAGS -ansi -Wall -Wno-implicit-function-declaration -O0"
 fi
 
-LDFLAGS="$LDFLAGS -lpthread"
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -38,6 +37,7 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([memmove])
 
 AC_CHECK_LIB(z, inflate)
+AC_CHECK_LIB(pthread, pthread_join)
 dnl AC_CHECK_LIB(cutest, CuTestInit)
 
 
@@ -106,8 +106,15 @@ AC_ARG_ENABLE(libxml2, [  --enable-libxml2
   AC_MSG_RESULT(no)
 )
 
-
 UTILINC=$axis2_utilinc
+
+case $host in
+  *mingw*)
+    VERSION_INFO="-avoid-version"
+    CFLAGS="$CFLAGS -DWIN32 -D_WINDOWS -D_MBCS -DAXIS2_DECLARE_EXPORT -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS"
+    LDFLAGS="$LDFLAGS -no-undefined"
+  ;;
+esac
 
 AC_SUBST(UTILINC)
 AC_SUBST(TESTDIR)

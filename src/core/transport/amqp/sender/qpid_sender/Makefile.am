@@ -7,7 +7,7 @@ libaxis2_qpid_sender_la_LIBADD = $(top_builddir)/util/src/libaxutil.la \
 								 $(top_builddir)/src/core/transport/amqp/util/libaxis2_amqp_util.la \
 								 $(QPID_HOME)/lib/libqpidclient.la
 
-libaxis2_qpid_sender_la_LDFLAGS = g++ -version-info $(VERSION_NO)
+libaxis2_qpid_sender_la_LDFLAGS = g++ $(VERSION_INFO)
 
 INCLUDES = -I$(top_builddir)/include \
 	       -I$(top_builddir)/src/core/transport/amqp/sender/qpid_sender \

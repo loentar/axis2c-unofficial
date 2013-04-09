@@ -7,7 +7,7 @@ libaxis2_xpath_la_SOURCES = xpath.c \
 			xpath_internals_parser.c \
 			xpath_streaming.c
 
-libaxis2_xpath_la_LDFLAGS = -version-info $(VERSION_NO)
+libaxis2_xpath_la_LDFLAGS = $(VERSION_INFO)
 
 libaxis2_xpath_la_LIBADD = ../../../util/src/libaxutil.la ../om/libaxis2_axiom.la 
 INCLUDES = -I$(top_builddir)/include \

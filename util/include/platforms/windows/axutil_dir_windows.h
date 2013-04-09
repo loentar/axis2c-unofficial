@@ -26,6 +26,9 @@
 #include <windows.h>
 #include <axutil_utils_defines.h>
 
+#if defined __MINGW32__ && !defined _MAX_FNAME
+#define _MAX_FNAME 260
+#endif
 
 /* struct dirent - same as Unix dirent.h */
 struct dirent

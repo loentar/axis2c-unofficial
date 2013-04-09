@@ -23,7 +23,7 @@ libaxis2_axiom_la_LIBADD =	$(top_builddir)/src/soap/libaxis2_soap.la \
 							../parser/${WRAPPER_DIR}/libaxis2_parser.la \
 							../../../util/src/libaxutil.la
 
-libaxis2_axiom_la_LDFLAGS = -version-info $(VERSION_NO)
+libaxis2_axiom_la_LDFLAGS = $(VERSION_INFO)
 
 INCLUDES =	-I$(top_builddir)/include \
             -I$(top_builddir)/src/parser \

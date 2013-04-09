@@ -1,0 +1,2 @@
+SUBDIRS = @PLATFORM@
+DIST_SUBDIRS = unix windows
