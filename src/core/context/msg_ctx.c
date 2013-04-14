@@ -52,6 +52,7 @@ struct axis2_msg_ctx
     axis2_msg_info_headers_t *msg_info_headers;
     axis2_bool_t msg_info_headers_deep_copy;
 
+    axis2_bool_t op_ctx_owner;
     struct axis2_op_ctx *op_ctx;
     struct axis2_svc_ctx *svc_ctx;
     struct axis2_svc_grp_ctx *svc_grp_ctx;
@@ -246,6 +247,7 @@ axis2_msg_ctx_create(
     msg_ctx->base = NULL;
     msg_ctx->process_fault = AXIS2_FALSE;
     msg_ctx->msg_info_headers = NULL;
+    msg_ctx->op_ctx_owner = AXIS2_FALSE;
     msg_ctx->op_ctx = NULL;
     msg_ctx->svc_ctx = NULL;
     msg_ctx->svc_grp_ctx = NULL;
@@ -438,15 +440,15 @@ axis2_msg_ctx_free(
         axutil_string_free(msg_ctx->charset_encoding, env);
     }
 
-    if (msg_ctx->transport_out_stream)
-    {
-        axutil_stream_free(msg_ctx->transport_out_stream, env);
-    }
-
     if (msg_ctx->out_transport_info)
     {
         AXIS2_OUT_TRANSPORT_INFO_FREE(msg_ctx->out_transport_info,
                                            env);
+    }
+    else
+    if (msg_ctx->transport_out_stream)
+    {
+        axutil_stream_free(msg_ctx->transport_out_stream, env);
     }
 
     if (msg_ctx->transport_headers)
@@ -554,6 +556,9 @@ axis2_msg_ctx_free(
          * properties as well. */
         AXIS2_FREE (env->allocator, msg_ctx->options);
     }
+
+    if (msg_ctx->op_ctx && msg_ctx->op_ctx_owner)
+        axis2_op_ctx_free(msg_ctx->op_ctx, env);
 
     AXIS2_FREE(env->allocator, msg_ctx);
 
@@ -1177,6 +1182,20 @@ axis2_msg_ctx_set_op_ctx(
     }
     return AXIS2_SUCCESS;
 }
+
+axis2_status_t AXIS2_CALL
+axis2_msg_ctx_set_op_ctx_owner_flag(
+        axis2_msg_ctx_t * msg_ctx,
+        const axutil_env_t * env,
+        axis2_bool_t owner_flag)
+{
+    AXIS2_PARAM_CHECK (env->error, msg_ctx, AXIS2_FAILURE);
+
+    msg_ctx->op_ctx_owner = owner_flag;
+
+    return AXIS2_SUCCESS;
+}
+
 
 axis2_bool_t AXIS2_CALL
 axis2_msg_ctx_get_output_written(

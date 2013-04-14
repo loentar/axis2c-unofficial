@@ -1625,6 +1625,7 @@ axis2_http_sender_process_response (axis2_http_sender_t * sender,
     property = axutil_property_create (env);
     axutil_property_set_scope (property, env, AXIS2_SCOPE_REQUEST);
     axutil_property_set_free_func (property, env, axutil_stream_free_void_arg);
+    axutil_property_set_own_value(property, env, AXIS2_FALSE);
     axutil_property_set_value (property, env, in_stream);
     axis2_msg_ctx_set_property (msg_ctx, env, AXIS2_TRANSPORT_IN, property);
     AXIS2_LOG_TRACE(env->log, AXIS2_LOG_SI, 

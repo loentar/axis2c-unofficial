@@ -1208,6 +1208,7 @@ axis2_core_utils_internal_infer_op_from_rest_map_recursively(
                 AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI,
                         "No memory. Cannot create internal rest mapping structure");
 
+                AXIS2_FREE(env->allocator, hi);
                 return NULL;
             }
             tmp_param_values = axutil_array_list_create(env, 10);
@@ -1217,6 +1218,7 @@ axis2_core_utils_internal_infer_op_from_rest_map_recursively(
                 AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI,
                         "No memory. Cannot create internal rest mapping structure");
                 axutil_array_list_free(tmp_param_keys, env);
+                AXIS2_FREE(env->allocator, hi);
                 return NULL;
             }
 
@@ -1228,6 +1230,7 @@ axis2_core_utils_internal_infer_op_from_rest_map_recursively(
                         "No memory. Cannot create internal rest mapping structure");
                 axutil_array_list_free(tmp_param_keys, env);
                 axutil_array_list_free(tmp_param_values, env);
+                AXIS2_FREE(env->allocator, hi);
                 return NULL;
             }
             dup_pattern = axutil_strdup(env, hash_key);
@@ -1239,6 +1242,7 @@ axis2_core_utils_internal_infer_op_from_rest_map_recursively(
                 axutil_array_list_free(tmp_param_keys, env);
                 axutil_array_list_free(tmp_param_values, env);
                 AXIS2_FREE(env->allocator, dup_url_component);
+                AXIS2_FREE(env->allocator, hi);
                 return NULL;
             }
 
@@ -1292,6 +1296,7 @@ axis2_core_utils_internal_infer_op_from_rest_map_recursively(
                     axutil_array_list_free(tmp_param_keys, env);
                     axutil_array_list_free(tmp_param_values, env);
                     /* since of is found, no more searches needed */
+                    AXIS2_FREE(env->allocator, hi);
                     break;
                 }
             }

@@ -150,6 +150,9 @@ axis2_http_client_free(
         axutil_array_list_free(http_client->mime_parts, env);
     }
 
+    if (http_client->data_stream)
+        axutil_stream_free(http_client->data_stream, env);
+
     AXIS2_FREE(env->allocator, http_client);
     return;
 }

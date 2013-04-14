@@ -773,6 +773,19 @@ extern "C"
         struct axis2_op_ctx *op_ctx);
 
     /**
+     * Sets ownership flag of operation context.
+     * @param msg_ctx message context
+     * @param env pointer to environment struct
+     * @param owner_flag ownership flag
+     * @return AXIS2_SUCCESS on success, else AXIS2_FAILURE
+     */
+    AXIS2_EXTERN axis2_status_t AXIS2_CALL
+    axis2_msg_ctx_set_op_ctx_owner_flag(
+            axis2_msg_ctx_t * msg_ctx,
+            const axutil_env_t * env,
+            axis2_bool_t owner_flag);
+
+    /**
      * Gets the bool value indicating the output written status. 
      * @param msg_ctx message context
      * @param env pointer to environment struct 

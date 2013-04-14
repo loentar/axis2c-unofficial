@@ -479,6 +479,11 @@ axis2_op_client_execute(
                                                                     msg_ctx,
                                                                     op_client->
                                                                     svc_ctx));
+        if (!axis2_msg_ctx_get_relates_to(msg_ctx, env))
+        { /* op_ctx was allocated inside find function */
+            axis2_msg_ctx_set_op_ctx_owner_flag(msg_ctx, env, AXIS2_TRUE);
+        }
+
         axis2_msg_ctx_set_svc_ctx(msg_ctx, env, op_client->svc_ctx);
 
         /* send the message */

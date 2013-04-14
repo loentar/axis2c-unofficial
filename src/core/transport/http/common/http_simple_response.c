@@ -535,6 +535,9 @@ axis2_http_simple_response_set_body_stream(
      * Problem in freeing is most of the time the stream doesn't belong
      * to the http_simple_response
      */
+    if (simple_response->stream)
+        axutil_stream_free(simple_response->stream, env);
+
     simple_response->stream = stream;
     return AXIS2_SUCCESS;
 }

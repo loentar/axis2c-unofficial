@@ -1420,6 +1420,7 @@ axis2_http_transport_utils_process_http_head_request(
     axis2_msg_ctx_set_soap_envelope(msg_ctx, env, soap_envelope);
     engine = axis2_engine_create(env, conf_ctx);
     axis2_engine_receive(engine, env, msg_ctx);
+    axis2_engine_free(engine, env);
     return AXIS2_TRUE;
 }
 
@@ -1493,6 +1494,7 @@ axis2_http_transport_utils_process_http_get_request(
 	
     engine = axis2_engine_create(env, conf_ctx);
     axis2_engine_receive(engine, env, msg_ctx);
+    axis2_engine_free(engine, env);
     return AXIS2_TRUE;
 }
 
@@ -1570,6 +1572,7 @@ axis2_http_transport_utils_process_http_delete_request(
 
     engine = axis2_engine_create(env, conf_ctx);
     axis2_engine_receive(engine, env, msg_ctx);
+    axis2_engine_free(engine, env);
     return AXIS2_TRUE;
 }
 
@@ -1641,6 +1644,8 @@ axis2_http_transport_utils_get_request_params(
         axis2_http_transport_utils_strdecode(env, tmp_value, tmp_value);
         axutil_hash_set(ret, tmp_name, AXIS2_HASH_KEY_STRING, tmp_value);
     }
+
+    AXIS2_FREE(env->allocator, query_str);
 
     return ret;
 }
@@ -1797,7 +1802,8 @@ axis2_http_transport_utils_get_services_html(
     axutil_hash_t *services_map = NULL;
     axutil_hash_t *errorneous_svc_map = NULL;
     axis2_char_t *ret = NULL;
-    axis2_char_t *tmp2 = (axis2_char_t *) "<h2>Deployed Services</h2>";
+    axis2_char_t *tmp2 =
+            (axis2_char_t *)axutil_strdup(env, "<h2>Deployed Services</h2>");
     axutil_hash_index_t *hi = NULL;
     axis2_bool_t svcs_exists = AXIS2_FALSE;
     axis2_conf_t *conf = NULL;
@@ -1822,13 +1828,13 @@ axis2_http_transport_utils_get_services_html(
                                                                     service),
                                                                    env), env);
             ret = axutil_stracat(env, tmp2, "<h3><u>");
+            AXIS2_FREE(env->allocator, tmp2);
             tmp2 = ret;
             ret = axutil_stracat(env, tmp2, sname);
             AXIS2_FREE(env->allocator, tmp2);
             tmp2 = ret;
-            ret = axutil_stracat(env, tmp2, "</u></h3>");
-            tmp2 = ret;
-            ret = axutil_stracat(env, tmp2, "<p>");
+            ret = axutil_stracat(env, tmp2, "</u></h3><p>");
+            AXIS2_FREE(env->allocator, tmp2);
             tmp2 = ret;
 
                              /**
@@ -1836,8 +1842,10 @@ axis2_http_transport_utils_get_services_html(
             ret = axutil_stracat(env, tmp2, axis2_svc_get_svc_desc((axis2_svc_t
                                                                     *) service,
                                                                    env));
+            AXIS2_FREE(env->allocator, tmp2);
             tmp2 = ret;
             ret = axutil_stracat(env, tmp2, "</p>");
+            AXIS2_FREE(env->allocator, tmp2);
             tmp2 = ret;
             ops = axis2_svc_get_all_ops(((axis2_svc_t *) service), env);
             if (ops && 0 != axutil_hash_count(ops))
@@ -1876,6 +1884,7 @@ axis2_http_transport_utils_get_services_html(
             else
             {
                 ret = axutil_stracat(env, tmp2, "No operations Available");
+                AXIS2_FREE(env->allocator, tmp2);
                 tmp2 = ret;
             }
         }
@@ -1907,14 +1916,17 @@ axis2_http_transport_utils_get_services_html(
     }
     if (AXIS2_FALSE == svcs_exists)
     {
-        ret = axutil_strdup(env, "<h2>There are no services deployed</h2>");
+        AXIS2_FREE(env->allocator, tmp2);
+        tmp2 = axutil_strdup(env, "<h2>There are no services deployed</h2>");
     }
     ret =
         axutil_stracat(env,
                        "<html><head><title>Axis2C :: Services</title></head>"
                        "<body><font face=\"courier\">", tmp2);
+    AXIS2_FREE(env->allocator, tmp2);
     tmp2 = ret;
     ret = axutil_stracat(env, tmp2, "</font></body></html>\r\n");
+    AXIS2_FREE(env->allocator, tmp2);
 
     return ret;
 }
@@ -1974,6 +1986,9 @@ axis2_http_transport_utils_get_services_static_wsdl(
                                      service, env), AXIS2_PATH_SEP_STR,
                                     svc_name, ".wsdl", NULL);
                 }
+                /* break will cause memleak, because hash_index is freed only
+                   when iterated to the last element */
+                AXIS2_FREE(env->allocator, hi);
                 break;
             }
 
@@ -1989,10 +2004,10 @@ axis2_http_transport_utils_get_services_static_wsdl(
         axis2_char_t *tmp;
         int i = 0;
 
-        content = (axis2_char_t *) AXIS2_MALLOC(env->allocator, size);
         wsdl_file = fopen(wsdl_path, "r");
         if (wsdl_file)
         {
+            content = (axis2_char_t *) AXIS2_MALLOC(env->allocator, size);
             c = fgetc(wsdl_file);
             while (c != EOF)
             {
@@ -2016,6 +2031,12 @@ axis2_http_transport_utils_get_services_static_wsdl(
     {
         wsdl_string = axutil_strdup(env, "Unable to retrieve wsdl for this service");
     }
+
+    if (url_tok[0])
+        AXIS2_FREE(env->allocator, url_tok[0]);
+    if (url_tok[1])
+        AXIS2_FREE(env->allocator, url_tok[1]);
+    AXIS2_FREE(env->allocator, url_tok);
 
     return wsdl_string;
 }
@@ -2660,6 +2681,10 @@ axis2_http_transport_utils_dispatch_and_verify(
         rest_disp = axis2_rest_disp_create(env);
         handler = axis2_disp_get_base(rest_disp, env);
         axis2_handler_invoke(handler, env, msg_ctx);
+
+        axis2_handler_desc_free(axis2_handler_get_handler_desc(handler, env), env);
+
+        axis2_disp_free(rest_disp, env);
 
         if (!axis2_msg_ctx_get_svc(msg_ctx, env) ||
             !axis2_msg_ctx_get_op(msg_ctx, env))

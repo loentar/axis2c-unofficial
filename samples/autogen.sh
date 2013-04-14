@@ -62,9 +62,6 @@ for f in aclocal.m4 configure; do
   sed -i "$replacer" $f
 done
 
-# patch to link shared library against static lib
-sed -i '/# Not a shared library/,+1{s/test.*;/false;/};/tdlname=\.\.\/bin\/\$dlname/s:../bin/::' ltmain.sh
-
 # touching files to prevent re-configuring
 for f in aclocal.m4 config.h.in configure Makefile.in; do
   touch $f
