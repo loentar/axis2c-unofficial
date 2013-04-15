@@ -133,6 +133,8 @@ main(
     }
     echo_process_response_envelope(callback, env);
 
+    axis2_svc_client_free(svc_client, env);
+
     if (env)
     {
         axutil_env_free((axutil_env_t *) env);

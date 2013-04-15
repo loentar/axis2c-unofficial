@@ -362,9 +362,6 @@ axiom_mime_parser_parse_for_soap(
     mime_parser->buf_array = buf_array;
     mime_parser->len_array = len_array;
 
-    temp_mime_boundary = axutil_stracat(env, "--", mime_boundary);
-    temp_mime_boundary_size = strlen(mime_boundary) + 2;
-
     /*This struct keeps the pre-post search informations*/
     search_info = AXIS2_MALLOC(env->allocator,
         sizeof(axiom_search_info_t));
@@ -526,6 +523,9 @@ axiom_mime_parser_parse_for_soap(
     search_info->match_len1 = 0;
     search_info->match_len2 = 0;
 
+    temp_mime_boundary = axutil_stracat(env, "--", mime_boundary);
+    temp_mime_boundary_size = strlen(mime_boundary) + 2;
+
     /*In order to extract the soap envelope we need to search for the first
       --MIMEBOUNDARY  */
 
@@ -534,6 +534,7 @@ axiom_mime_parser_parse_for_soap(
 
     if(!pos)
     {
+        AXIS2_FREE(env->allocator, temp_mime_boundary);
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI,
             "Error while searching for the SOAP part ");
         return AXIS2_FAILURE;
@@ -554,6 +555,7 @@ axiom_mime_parser_parse_for_soap(
             env, soap_len, buf_num, len_array, part_start, pos, buf_array, mime_parser);
             if(!soap_str)
             {
+                AXIS2_FREE(env->allocator, temp_mime_boundary);
                 AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI,
                     "Error while creating the SOAP part from the message ");
                 return AXIS2_FAILURE;
@@ -562,6 +564,7 @@ axiom_mime_parser_parse_for_soap(
             malloc_len = len_array[buf_num] - search_info->match_len1 - temp_mime_boundary_size;
             if(malloc_len < 0)
             {
+                AXIS2_FREE(env->allocator, temp_mime_boundary);
                 AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI,
                     "Error in parsing for mime.");
                 return AXIS2_FAILURE;
@@ -597,6 +600,7 @@ axiom_mime_parser_parse_for_soap(
         }     
         else
         {
+            AXIS2_FREE(env->allocator, temp_mime_boundary);
             return AXIS2_FAILURE;
         }
     }    
@@ -618,12 +622,14 @@ axiom_mime_parser_parse_for_soap(
             env, soap_len, buf_num - 1, len_array, part_start, pos, buf_array, mime_parser);
             if(!soap_str)
             {
+                AXIS2_FREE(env->allocator, temp_mime_boundary);
                 return AXIS2_FAILURE;
             }
 
             malloc_len = len_array[buf_num] - search_info->match_len2;
             if(malloc_len < 0)
             {
+                AXIS2_FREE(env->allocator, temp_mime_boundary);
                 return AXIS2_FAILURE;
             }    
             else
@@ -654,6 +660,7 @@ axiom_mime_parser_parse_for_soap(
         }     
         else
         {
+            AXIS2_FREE(env->allocator, temp_mime_boundary);
             return AXIS2_FAILURE;
         }
     }

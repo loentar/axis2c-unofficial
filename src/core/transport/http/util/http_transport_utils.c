@@ -370,6 +370,7 @@ axis2_http_transport_utils_process_http_post_request(
 
                 if (!callback_ctx->chunked_stream)
                 {
+                    AXIS2_FREE(env->allocator, callback_ctx);
                     AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Error occurred in"
                                     " creating in chunked stream.");
                     return AXIS2_FAILURE;
@@ -568,7 +569,7 @@ axis2_http_transport_utils_process_http_post_request(
             /*axiom_mime_parser_free(mime_parser, env);
             mime_parser = NULL;*/
 
-            /*AXIS2_FREE(env->allocator, mime_boundary);*/
+            AXIS2_FREE(env->allocator, mime_boundary);
         }
         /*AXIS2_FREE(env->allocator, mime_boundary);*/
     }
