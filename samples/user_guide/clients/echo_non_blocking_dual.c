@@ -210,7 +210,10 @@ echo_callback_on_complete(
             axis2_char_t *om_str = NULL;
             om_str = axiom_node_to_string(ret_node, env);
             if (om_str)
+            {
                 printf("\nReceived OM : %s\n", om_str);
+                AXIS2_FREE(env->allocator, om_str);
+            }
             printf("\necho client invoke SUCCESSFUL!\n");
         }
     }
