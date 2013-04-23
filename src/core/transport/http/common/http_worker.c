@@ -38,6 +38,9 @@
 #include <stdlib.h>
 #include <platforms/axutil_platform_auto_sense.h>
 
+/* at least 26 symbols for ctime + " GMT" string */
+#define AXIS2_SERVER_TIME_BUFFER_SIZE 32
+
 struct axis2_http_worker
 {
     axis2_conf_ctx_t *conf_ctx;
@@ -214,21 +217,8 @@ axis2_http_worker_process_request(
         axis2_http_header_t *server = NULL;
         axis2_http_header_t *server_date = NULL;
         axis2_char_t *date_str = NULL;
-        char *date_str_tmp = NULL;
-        
-        date_str_tmp = axis2_http_worker_get_server_time(http_worker, env);
-        date_str = AXIS2_MALLOC(env->allocator,
-            sizeof(axis2_char_t) * (strlen(date_str_tmp) + 5));
 
-        if (!date_str)
-        {
-            AXIS2_HANDLE_ERROR(env, AXIS2_ERROR_NO_MEMORY,
-                               AXIS2_FAILURE);
-            return AXIS2_FALSE;
-
-        }
-
-        sprintf(date_str, "%s GMT", date_str_tmp);
+        date_str = axis2_http_worker_get_server_time(http_worker, env);
 
         server_date = axis2_http_header_create(env,
                                           AXIS2_HTTP_HEADER_DATE, date_str);
@@ -2280,22 +2270,51 @@ static axis2_char_t *axis2_http_worker_get_server_time(
     axis2_http_worker_t * http_worker,
     const axutil_env_t * env)
 {
-    time_t tp;
     char *time_str;
-    tp = time(&tp);
-    time_str = ctime(&tp);
+    size_t time_str_len;
+    struct tm tt;
+
+#if defined WIN32
+    /* MinGW have no thread-safe implementation of ctime/localtime. WinAPI is used instead */
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+
+    tt.tm_sec = st.wSecond;
+    tt.tm_min = st.wMinute;
+    tt.tm_hour = st.wHour;
+    tt.tm_mday = st.wDay;
+    tt.tm_mon = st.wMonth;
+    tt.tm_year = st.wYear;
+    tt.tm_wday = st.wDayOfWeek;
+    tt.tm_yday = 0;
+    tt.tm_isdst = 0;
+#else
+    time_t tp;
+
+    time(&tp);
+    if (!localtime_r(&tp, &tt))
+    {
+        return NULL;
+    }
+#endif
+
+    time_str = (char *)AXIS2_MALLOC(env->allocator, AXIS2_SERVER_TIME_BUFFER_SIZE);
     if (!time_str)
     {
         return NULL;
     }
-    if (AXIS2_NEW_LINE == time_str[strlen(time_str) - 1])
+
+    time_str_len =
+            strftime(time_str, AXIS2_SERVER_TIME_BUFFER_SIZE, "%a %b %d %T %Y GMT", &tt);
+    if (time_str_len > AXIS2_SERVER_TIME_BUFFER_SIZE)
     {
-        time_str[strlen(time_str) - 1] = AXIS2_ESC_NULL;
+        AXIS2_FREE(env->allocator, time_str);
+        return NULL;
     }
     /* We use the ANSI C Date Format, which is Legal according to RFC2616, 
      * Section 3.3.1. We are not a HTTP/1.1 only server, and thus, it suffices.
      */
-    return time_str;
+    return (axis2_char_t *)time_str;
 }
 
 
