@@ -23,8 +23,6 @@ axis2_calc_add(
     const axutil_env_t * env,
     axiom_node_t * node)
 {
-    axiom_node_t *complex_node = NULL;
-    axiom_node_t *seq_node = NULL;
     axiom_node_t *param1_node = NULL;
     axiom_node_t *param1_text_node = NULL;
     axis2_char_t *param1_str = NULL;
@@ -41,26 +39,12 @@ axis2_calc_add(
         printf("Calculator client request ERROR: input parameter NULL\n");
         return NULL;
     }
-    complex_node = axiom_node_get_first_child(node, env);
-    if (!complex_node)
-    {
-        AXIS2_ERROR_SET(env->error,
-                        AXIS2_ERROR_SVC_SKEL_INVALID_XML_FORMAT_IN_REQUEST,
-                        AXIS2_FAILURE);
-        printf("Calculator service  ERROR: invalid XML in request\n");
-        return NULL;
-    }
-    seq_node = axiom_node_get_first_child(complex_node, env);
-    if (!seq_node)
-    {
-        AXIS2_ERROR_SET(env->error,
-                        AXIS2_ERROR_SVC_SKEL_INVALID_XML_FORMAT_IN_REQUEST,
-                        AXIS2_FAILURE);
-        printf("Calculator service  ERROR: invalid XML in request\n");
-        return NULL;
-    }
 
-    param1_node = axiom_node_get_first_child(seq_node, env);
+    /* iterating to the first child element skipping (empty) text elements */
+    for (param1_node = axiom_node_get_first_child(node, env);
+         param1_node && axiom_node_get_node_type(param1_node, env) != AXIOM_ELEMENT;
+         param1_node = axiom_node_get_next_sibling(param1_node, env));
+
     if (!param1_node)
     {
         AXIS2_ERROR_SET(env->error,
@@ -96,7 +80,10 @@ axis2_calc_add(
         return NULL;
     }
 
-    param2_node = axiom_node_get_next_sibling(param1_node, env);
+    /* iterating to the second child element skipping (empty) text elements */
+    for (param2_node = axiom_node_get_next_sibling(param1_node, env);
+         param2_node && axiom_node_get_node_type(param2_node, env) != AXIOM_ELEMENT;
+         param2_node = axiom_node_get_next_sibling(param2_node, env));
     if (!param2_node)
     {
         AXIS2_ERROR_SET(env->error,
@@ -185,7 +172,11 @@ axis2_calc_sub(
         return NULL;
     }
 
-    param1_node = axiom_node_get_first_child(node, env);
+    /* iterating to the first child element skipping (empty) text elements */
+    for (param1_node = axiom_node_get_first_child(node, env);
+         param1_node && axiom_node_get_node_type(param1_node, env) != AXIOM_ELEMENT;
+         param1_node = axiom_node_get_next_sibling(param1_node, env));
+
     if (!param1_node)
     {
         AXIS2_ERROR_SET(env->error,
@@ -223,7 +214,10 @@ axis2_calc_sub(
         return NULL;
     }
 
-    param2_node = axiom_node_get_next_sibling(param1_node, env);
+    /* iterating to the second child element skipping (empty) text elements */
+    for (param2_node = axiom_node_get_next_sibling(param1_node, env);
+         param2_node && axiom_node_get_node_type(param2_node, env) != AXIOM_ELEMENT;
+         param2_node = axiom_node_get_next_sibling(param2_node, env));
     if (!param2_node)
     {
         AXIS2_ERROR_SET(env->error,
@@ -314,7 +308,11 @@ axis2_calc_mul(
         return NULL;
     }
 
-    param1_node = axiom_node_get_first_child(node, env);
+    /* iterating to the first child element skipping (empty) text elements */
+    for (param1_node = axiom_node_get_first_child(node, env);
+         param1_node && axiom_node_get_node_type(param1_node, env) != AXIOM_ELEMENT;
+         param1_node = axiom_node_get_next_sibling(param1_node, env));
+
     if (!param1_node)
     {
         AXIS2_ERROR_SET(env->error,
@@ -352,7 +350,10 @@ axis2_calc_mul(
         return NULL;
     }
 
-    param2_node = axiom_node_get_next_sibling(param1_node, env);
+    /* iterating to the second child element skipping (empty) text elements */
+    for (param2_node = axiom_node_get_next_sibling(param1_node, env);
+         param2_node && axiom_node_get_node_type(param2_node, env) != AXIOM_ELEMENT;
+         param2_node = axiom_node_get_next_sibling(param2_node, env));
     if (!param2_node)
     {
         AXIS2_ERROR_SET(env->error,
@@ -443,7 +444,11 @@ axis2_calc_div(
         return NULL;
     }
 
-    param1_node = axiom_node_get_first_child(node, env);
+    /* iterating to the first child element skipping (empty) text elements */
+    for (param1_node = axiom_node_get_first_child(node, env);
+         param1_node && axiom_node_get_node_type(param1_node, env) != AXIOM_ELEMENT;
+         param1_node = axiom_node_get_next_sibling(param1_node, env));
+
     if (!param1_node)
     {
         AXIS2_ERROR_SET(env->error,
@@ -481,7 +486,10 @@ axis2_calc_div(
         return NULL;
     }
 
-    param2_node = axiom_node_get_next_sibling(param1_node, env);
+    /* iterating to the second child element skipping (empty) text elements */
+    for (param2_node = axiom_node_get_next_sibling(param1_node, env);
+         param2_node && axiom_node_get_node_type(param2_node, env) != AXIOM_ELEMENT;
+         param2_node = axiom_node_get_next_sibling(param2_node, env));
     if (!param2_node)
     {
         AXIS2_ERROR_SET(env->error,
