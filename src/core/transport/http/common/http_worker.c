@@ -2283,8 +2283,8 @@ static axis2_char_t *axis2_http_worker_get_server_time(
     tt.tm_min = st.wMinute;
     tt.tm_hour = st.wHour;
     tt.tm_mday = st.wDay;
-    tt.tm_mon = st.wMonth;
-    tt.tm_year = st.wYear;
+    tt.tm_mon = st.wMonth - 1;
+    tt.tm_year = st.wYear - 1900;
     tt.tm_wday = st.wDayOfWeek;
     tt.tm_yday = 0;
     tt.tm_isdst = 0;
@@ -2305,7 +2305,7 @@ static axis2_char_t *axis2_http_worker_get_server_time(
     }
 
     time_str_len =
-            strftime(time_str, AXIS2_SERVER_TIME_BUFFER_SIZE, "%a %b %d %T %Y GMT", &tt);
+            strftime(time_str, AXIS2_SERVER_TIME_BUFFER_SIZE, "%a %b %d %H:%M:%S %Y GMT", &tt);
     if (time_str_len > AXIS2_SERVER_TIME_BUFFER_SIZE)
     {
         AXIS2_FREE(env->allocator, time_str);
