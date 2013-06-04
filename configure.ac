@@ -307,7 +307,10 @@ AC_ARG_WITH(apr,
     elif test -d '/usr/include/apr-0'; then
         aprinc="-I/usr/include/apr-0"
     else
-        AC_MSG_ERROR(could not find apr. stop)
+        aprinc=`pkg-config --cflags-only-I apr-1`
+        if test -z "$aprinc"; then
+            AC_MSG_ERROR(could not find apr. stop)
+        fi
     fi
     ;;
   esac ],
