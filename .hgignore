@@ -61,3 +61,5 @@ samples/user_guide/clients/echo_blocking_soap11
 samples/user_guide/clients/echo_non_blocking
 samples/user_guide/clients/echo_non_blocking_dual
 samples/user_guide/clients/echo_rest
+build/deploy
+build/win32/int.msvc

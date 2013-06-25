@@ -280,8 +280,12 @@ axis2_apache2_worker_process_request(
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "Client HTTP version %s",
                     http_version);
 
+#ifdef APACHE_VERSION_2_4_X
+    peer_ip = request->connection->client_ip;
+#else
     peer_ip = request->connection->remote_ip;
-    
+#endif
+
     if (peer_ip)
     {
         peer_property = axutil_property_create(env);

@@ -19,7 +19,7 @@ WITH_ARCHIVE = 0
 #
 #
 # build with json-c
-ENABLE_JSON = 0
+ENABLE_JSON = 1
 #
 #
 #############################################################################
@@ -65,6 +65,8 @@ APACHE_BIN_DIR =
 # apache 2 server family
 # To use apache 2.2 family, use  APACHE_VERSION_IS_2_0_X = 0
 APACHE_VERSION_2_0_X = 0
+# To use apache 2.4 family, use  APACHE_VERSION_IS_2_4_X = 1
+APACHE_VERSION_2_4_X = 1
 #
 #
 #############################################################################
