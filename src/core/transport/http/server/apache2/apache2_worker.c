@@ -280,7 +280,7 @@ axis2_apache2_worker_process_request(
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "Client HTTP version %s",
                     http_version);
 
-#ifdef APACHE_VERSION_2_4_X
+#if AP_SERVER_MAJORVERSION_NUMBER == 2 && AP_SERVER_MINORVERSION_NUMBER >= 4
     peer_ip = request->connection->client_ip;
 #else
     peer_ip = request->connection->remote_ip;
