@@ -142,14 +142,6 @@ mingw*)
   LIBS="$LIBS -lrpcrt4 -lws2_32 -lkernel32"
   LDFLAGS="$LDFLAGS -no-undefined"
   ;;
-darwin*)
-  darwin=yes
-  if test x"$GCC" = xyes
-  then
-    CFLAGS="$CFLAGS -Wno-long-double"
-    CXXFLAGS="$CXXFLAGS -Wno-long-double"
-  fi
-  ;;
 solaris*)
   solaris=yes
   AC_DEFINE(AXIS2_SOLARIS,1,[Am I on Solaris?])
