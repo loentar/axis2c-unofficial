@@ -451,13 +451,14 @@ VERSION_NO="6:0:6"
 VERSION_INFO="-version-info ${VERSION_NO}"
 QPID_HOME=$qpidhome
 
+
 case $host in
   *mingw*)
     VERSION_INFO="-avoid-version"
     CFLAGS="$CFLAGS -DWIN32 -D_WINDOWS -D_MBCS -DAXIS2_DECLARE_EXPORT -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS"
     LDFLAGS="$LDFLAGS -no-undefined"
   ;;
-  darwin*)
+  *darwin*)
   ;;
   *)
     test "$GCC" = "yes" && CFLAGS="$CFLAGS -Wno-unused-but-set-variable"

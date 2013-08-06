@@ -250,7 +250,7 @@ case $host in
   *mingw*)
     VERSION_INFO="-avoid-version"
   ;;
-  darwin*)
+  *darwin*)
   ;;
   *)
     test "$GCC" = "yes" && CFLAGS="$CFLAGS -Wno-unused-but-set-variable"

@@ -15,19 +15,19 @@
 # limitations under the License.
 echo 'Running autogen.sh in Util'
 cd util
-sh autogen.sh
+./autogen.sh
 
 echo 'Running autogen.sh in Axiom'
 cd ../axiom
-sh autogen.sh
+./autogen.sh
 
 echo 'Running autogen.sh in Guththila'
 cd ../guththila
-sh autogen.sh
+./autogen.sh
 
 echo 'Running autogen.sh in Neethi'
 cd ../neethi
-sh autogen.sh
+./autogen.sh
 
 echo 'Running autogen.sh in Axis2/C'
 cd ..
@@ -85,16 +85,16 @@ fi
 replacer="\
 /DLL is installed to \$(libdir)\/\.\.\/bin by postinstall_cmds/,/shlibpath_overrides_runpath=yes/d;\
 /MinGW DLLs use traditional 'lib' prefix/,/;;/\
-  {s:^\(.*soname_spec=\).*:\1'\`echo \${libname} | \$SED -e 's/^lib//'\`\${shared_ext}'; library_names_spec=\$soname_spec:}"
+  {s:^\(.*soname_spec=\).*:\1'\`echo \$\{libname\} | \$SED -e 's/^lib//'\`\${shared_ext}'; library_names_spec=\$soname_spec:;}"
 
 find . -type l -maxdepth 1 -exec sh -c 'f=$(readlink {}); rm -f {}; cp -f $f {}' \; 2>/dev/null
 
 for f in configure aclocal.m4; do
-  sed -i "$replacer" $f
+  sed -i '' "$replacer" $f
 done
 
 # patch to link shared library against static lib
-sed -i '/# Not a shared library/,+1{s/test.*;/false;/};/tdlname=\.\.\/bin\/\$dlname/s:../bin/::' ltmain.sh
+sed -i '' '/# Not a shared library/{N;s/test.*;/false;/;};/tdlname=\.\.\/bin\/\$dlname/s:../bin/::' ltmain.sh
 
 # touching files to prevent re-configuring
 for f in aclocal.m4 config.h.in configure config.guess config.sub depcomp install-sh missing Makefile.in; do
