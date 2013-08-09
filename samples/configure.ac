@@ -119,6 +119,12 @@ case $host in
   ;;
 esac
 
+case $CC in
+  *android*)
+    VERSION_INFO="-avoid-version"
+    CFLAGS="${CFLAGS//-ansi/} -mthumb"
+  ;;
+esac
 
 AC_SUBST(APACHE2INC)
 AC_SUBST(APRINC)

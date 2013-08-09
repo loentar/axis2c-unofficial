@@ -116,6 +116,13 @@ case $host in
   ;;
 esac
 
+case $CC in
+  *android*)
+    VERSION_INFO="-avoid-version"
+    CFLAGS="${CFLAGS//-ansi/} -mthumb"
+  ;;
+esac
+
 AC_SUBST(UTILINC)
 AC_SUBST(TESTDIR)
 AC_SUBST(WRAPPER_DIR)

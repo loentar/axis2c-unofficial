@@ -73,6 +73,12 @@ case $host in
   ;;
 esac
 
+case $CC in
+  *android*)
+    VERSION_INFO="-avoid-version"
+    CFLAGS="${CFLAGS//-ansi/} -mthumb"
+  ;;
+esac
 
 AC_SUBST(VERSION_NO)
 AC_SUBST(VERSION_INFO)
