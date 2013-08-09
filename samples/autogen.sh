@@ -59,7 +59,7 @@ replacer="\
 find . -type l -maxdepth 1 -exec sh -c 'f=$(readlink {}); rm -f {}; cp -f $f {}' \; 2>/dev/null
 
 for f in aclocal.m4 configure; do
-  sed -i '' "$replacer" $f
+  sed -i~ "$replacer" $f
 done
 
 # touching files to prevent re-configuring

@@ -72,11 +72,11 @@ replacer="\
 find . -type l -maxdepth 1 -exec sh -c 'f=$(readlink {}); rm -f {}; cp -f $f {}' \; 2>/dev/null
 
 for f in aclocal.m4 configure; do
-  sed -i '' "$replacer" $f
+  sed -i~ "$replacer" $f
 done
 
 # patch to link shared library against static lib
-sed -i '' '/# Not a shared library/{N;s/test.*;/false;/;};/tdlname=\.\.\/bin\/\$dlname/s:../bin/::' ltmain.sh
+sed -i~ '/# Not a shared library/{N;s/test.*;/false;/;};/tdlname=\.\.\/bin\/\$dlname/s:../bin/::' ltmain.sh
 
 # touching files to prevent re-configuring
 for f in aclocal.m4 config.h.in configure config.guess config.sub depcomp install-sh missing Makefile.in; do
