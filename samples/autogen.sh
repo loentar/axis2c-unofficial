@@ -49,6 +49,14 @@ else
 	exit 1
 fi
 
+
+if [ `sed --version 2>/dev/null | grep -c GNU` -eq 0 ]
+then
+  function sedi() { sed -i "" "$@"; }
+else
+  function sedi() { sed -i "$@"; }
+fi
+
 # patch config scripts to make MinGW libraries installed into original (not the ../bin) place
 # set dll names as native for windows - without version and "lib" prefix.
 replacer="\
@@ -59,7 +67,7 @@ replacer="\
 find . -type l -maxdepth 1 -exec sh -c 'f=$(readlink {}); rm -f {}; cp -f $f {}' \; 2>/dev/null
 
 for f in aclocal.m4 configure; do
-  sed -i~ "$replacer" $f
+  sedi "$replacer" $f
 done
 
 # touching files to prevent re-configuring
