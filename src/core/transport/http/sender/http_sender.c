@@ -43,6 +43,11 @@
 #define CLIENT_NONCE_LENGTH 8
 #endif
 
+#ifdef AXIS2_SSL_ENABLED
+void AXIS2_CALL axis2_ssl_stream_free(axutil_stream_t * stream,
+                                      const axutil_env_t * env);
+#endif
+
 struct axis2_http_sender
 {
     axis2_char_t *http_version;
@@ -1624,7 +1629,14 @@ axis2_http_sender_process_response (axis2_http_sender_t * sender,
         axis2_http_simple_response_extract_headers(response, env));
     property = axutil_property_create (env);
     axutil_property_set_scope (property, env, AXIS2_SCOPE_REQUEST);
-    axutil_property_set_free_func (property, env, axutil_stream_free_void_arg);
+#ifdef AXIS2_SSL_ENABLED
+    if(in_stream->stream_type == AXIS2_STREAM_SOCKET)
+        axutil_property_set_free_func (property, env, axutil_stream_free_void_arg);
+    else /** SSL Streams are AXIS2_STREAM_BASIC */
+        axutil_property_set_free_func(property, env, axis2_ssl_stream_free);
+#else
+    axutil_property_set_free_func(property, env, axutil_stream_free_void_arg);
+#endif
     axutil_property_set_own_value(property, env, AXIS2_FALSE);
     axutil_property_set_value (property, env, in_stream);
     axis2_msg_ctx_set_property (msg_ctx, env, AXIS2_TRANSPORT_IN, property);
