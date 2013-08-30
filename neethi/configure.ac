@@ -69,7 +69,16 @@ case $host in
   *darwin*)
   ;;
   *)
-    test "$GCC" = "yes" && CFLAGS="$CFLAGS -Wno-unused-but-set-variable"
+	SAVED_CFLAGS="$CFLAGS"
+	CFLAGS=-Wno-unused-but-set-variable
+	AC_MSG_CHECKING([whether CC supports -Wno-unused-but-set-variable])
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+		[AC_MSG_RESULT([yes])]
+		[AM_CFLAGS=-Wno-unused-but-set-variable],
+		[AC_MSG_RESULT([no])]
+	)
+	CFLAGS="$SAVED_CFLAGS"
+	AC_SUBST([AM_CFLAGS])
   ;;
 esac
 
