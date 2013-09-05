@@ -611,12 +611,14 @@ axis2_http_transport_utils_process_http_post_request(
         status = axis2_json_reader_read(json_reader, env);
         if (status != AXIS2_SUCCESS)
         {
+            axis2_json_reader_free(json_reader, env);
             return status;
         }
 
         root_node = axis2_json_reader_get_root_node(json_reader, env);
         if (!root_node)
         {
+            axis2_json_reader_free(json_reader, env);
             return AXIS2_FAILURE;
         }
 
@@ -1107,7 +1109,6 @@ axis2_http_transport_utils_process_http_put_request(
 
     char_set_str =
         axis2_http_transport_utils_get_charset_enc(env, content_type);
-    axis2_msg_ctx_set_charset_encoding(msg_ctx, env, char_set_str);
 
 #ifdef AXIS2_JSON_ENABLED
     if (strstr(content_type, AXIS2_HTTP_HEADER_ACCEPT_JSON))
@@ -1125,12 +1126,14 @@ axis2_http_transport_utils_process_http_put_request(
         status = axis2_json_reader_read(json_reader, env);
         if (status != AXIS2_SUCCESS)
         {
+            axis2_json_reader_free(json_reader, env);
             return status;
         }
 
         root_node = axis2_json_reader_get_root_node(json_reader, env);
         if (!root_node)
         {
+            axis2_json_reader_free(json_reader, env);
             return AXIS2_FAILURE;
         }
 
@@ -1451,7 +1454,7 @@ axis2_http_transport_utils_process_http_get_request(
     axis2_msg_ctx_set_server_side(msg_ctx, env, AXIS2_TRUE);
 
 #ifdef AXIS2_JSON_ENABLED
-    if (strstr(content_type, AXIS2_HTTP_HEADER_ACCEPT_JSON))
+    if (content_type && strstr(content_type, AXIS2_HTTP_HEADER_ACCEPT_JSON))
     {
         axis2_msg_ctx_set_doing_json(msg_ctx, env, AXIS2_TRUE);
     }
