@@ -408,10 +408,8 @@ guththila_un_init(guththila_t * m,const axutil_env_t * env)
  * Replace the references with the corresponding actual values.
  */ 
 static void
-guththila_token_evaluate_references(guththila_token_t * tok)
+guththila_string_evaluate_references(guththila_char_t *start, size_t size)
 {
-    size_t size = tok->size;
-    guththila_char_t *start = tok->start;
     size_t i, j;
 
     for (i = 0; (i < size) && (start[i] != '&'); i++)
@@ -487,7 +485,7 @@ guththila_token_evaluate_references(guththila_token_t * tok)
             for ( ; (i < size) && ('&' != (start[j] = start[i])); i++, j++)
                 ;
         }
-        tok->size = j;
+        start[j] = '\0';
     }
 }
 
@@ -521,12 +519,10 @@ guththila_token_close(guththila_t * m, guththila_token_t * tok,
         m->temp_tok = NULL;
         break;
     case _text_data:
-        guththila_token_evaluate_references(m->temp_tok);
         m->value = m->temp_tok;
         m->temp_tok = NULL;
         break;
     case _attribute_value:
-        guththila_token_evaluate_references(m->temp_tok);
         /* Chech weather we are at a xml namespace declaration */
         if ((m->temp_prefix && (guththila_tok_str_cmp(m->temp_prefix, "xmlns", 5u, env) == 0)) ||
             (guththila_tok_str_cmp(m->temp_name, "xmlns", 5u, env) == 0))
@@ -1228,6 +1224,7 @@ guththila_get_attribute_value(
     if (att->val)
     {
         GUTHTHILA_TOKEN_TO_STRING(att->val, str, env);
+        guththila_string_evaluate_references(str, GUTHTHILA_TOKEN_LEN(att->val));
         return str;
     }
     return NULL;
@@ -1286,6 +1283,7 @@ guththila_get_attribute_value_by_number(
     if (attr->val)
     {
         GUTHTHILA_TOKEN_TO_STRING(attr->val, str, env);
+        guththila_string_evaluate_references(str, GUTHTHILA_TOKEN_LEN(attr->val));
         return str;
     }
     return NULL;
@@ -1345,6 +1343,7 @@ guththila_get_value(
     if (m->value)
     {
         GUTHTHILA_TOKEN_TO_STRING(m->value, str, env);        
+        guththila_string_evaluate_references(str, GUTHTHILA_TOKEN_LEN(m->value));
         return str;
     }
     return NULL;
