@@ -65,7 +65,12 @@ fi
 
 if [ `sed --version 2>/dev/null | grep -c GNU` -eq 0 ]
 then
-  function sedi() { sed -i "" "$@"; }
+  if [ -n "`which gsed`" ]
+  then
+    function sedi() { gsed -i "$@"; }
+  else
+    function sedi() { sed -i "" "$@"; }
+  fi
 else
   function sedi() { sed -i "$@"; }
 fi
@@ -88,7 +93,7 @@ sedi '/# Not a shared library/{N;s/test.*;/false;/;};/tdlname=\.\.\/bin\/\$dlnam
 
 # touching files to prevent re-configuring
 for f in aclocal.m4 config.h.in configure config.guess config.sub depcomp install-sh missing Makefile.in; do
-  touch $f
+  touch $f 2>/dev/null
 done
 
 echo 'done'

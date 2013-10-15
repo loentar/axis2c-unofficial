@@ -267,7 +267,9 @@ axutil_uuid_get_mac_addr(
 
 #else
 
-#ifdef HAVE_GETIFADDRS   /* NetBSD, MacOSX, etc... */
+/* NetBSD, MacOSX, etc... */
+/* Solaris >= 11.1 seems to have getifaddrs, but it doesn't function as expected */
+#if defined HAVE_GETIFADDRS && !(defined(__sun) && (defined(__svr4__) || defined(__SVR4)))
 
 #ifndef max
 # define        max(a,b)        ((a) > (b) ? (a) : (b))
