@@ -69,7 +69,14 @@ axutil_uuid_gen_v1(
     if (AXIS2_TRUE == axutil_uuid_gen_is_first)
     {
         char *mac_addr = axutil_uuid_get_mac_addr();
-        memcpy(axutil_uuid_static.mac, mac_addr, 6);
+        if (!mac_addr)
+        {
+            memset(axutil_uuid_static.mac, 0, 6);
+        }
+        else
+        {
+            memcpy(axutil_uuid_static.mac, mac_addr, 6);
+        }
         axutil_uuid_static.time_seq = 0;
         axutil_uuid_static.clock = 0;
         free(mac_addr);
