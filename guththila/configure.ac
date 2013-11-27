@@ -98,7 +98,7 @@ esac
 case $CC in
   *android*)
     VERSION_INFO="-avoid-version"
-    CFLAGS="${CFLAGS//-ansi/} -mthumb"
+    CFLAGS="${CFLAGS//-ansi/}"
   ;;
 esac
 
