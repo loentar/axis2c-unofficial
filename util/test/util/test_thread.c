@@ -25,6 +25,9 @@
 #include <axutil_utils.h>
 #include "test_thread.h"
 #include <unistd.h>
+#include "../test_common/axis2c_test_macros.h"
+
+#define THREAD_AMMOUNT 100
 
 const axutil_env_t *env = NULL;
 static axutil_thread_mutex_t *thread_lock = NULL;
@@ -50,39 +53,56 @@ void
 thread_init(
     const axutil_env_t * env)
 {
+    START_TEST_CASE("thread_init");
     axutil_allocator_t *allocator = NULL;
 
     allocator = env->allocator;
 
     control = axutil_thread_once_init(allocator);
 
-    if (control)
-        printf("success - thread_init - axutil_thread_once_init \n");
-    else
-        printf("failure - thread_init - axutil_thread_once_init \n");
+    EXPECT_NOT_NULL(control);
 
     thread_lock =
         axutil_thread_mutex_create(allocator, AXIS2_THREAD_MUTEX_DEFAULT);
 
-    if (thread_lock)
-        printf("success - thread_init - axutil_thread_mutex_create \n");
-    else
-        printf("failure - thread_init - axutil_thread_mutex_create \n");
+    EXPECT_NOT_NULL(thread_lock);
+
+    END_TEST_CASE();
 }
 
 void *AXIS2_CALL
-test_function(
+test_env(
+    axutil_thread_t * td,
+    void *param)
+{
+    axutil_env_t *env;
+    env = ((axutil_env_t *) param);
+
+    axutil_env_t *thread_env = NULL;
+
+    thread_env = axutil_init_thread_env(env);
+
+    axutil_free_thread_env(thread_env);
+
+    axutil_thread_exit(td, env->allocator);
+
+    return (void *) 1;
+}
+
+void *AXIS2_CALL
+test_function1(
     axutil_thread_t * td,
     void *param)
 {
     int i;
     i = *((int *) param);
-    printf("thread data = %d \n", i);
+    /*printf("thread data = %d \n", i);*/
 
     axutil_thread_once(control, init_func);
 
     axutil_thread_mutex_lock(thread_lock);
-    printf("x = %d \n", ++x);
+    /*printf("x = %d \n", ++x);*/
+    ++x;
     axutil_thread_mutex_unlock(thread_lock);
 
     /*axutil_thread_exit(td, env->allocator); */
@@ -90,10 +110,12 @@ test_function(
     return (void *) 1;
 }
 
+
 void
 test_axutil_thread_create(
     const axutil_env_t * env)
 {
+    START_TEST_CASE("test_axutil_thread_create");
     axis2_status_t rv = AXIS2_FAILURE;
     axutil_allocator_t *allocator = NULL;
     int *i = NULL,
@@ -102,39 +124,32 @@ test_axutil_thread_create(
     allocator = env->allocator;
     i = AXIS2_MALLOC(allocator, sizeof(int));
     *i = 5;
-    t1 = axutil_thread_create(allocator, NULL, test_function, (void *) i);
+    t1 = axutil_thread_create(allocator, NULL, test_function1, (void *) i);
 
-    if (t1)
-        printf("success - test_axutil_thread_create - axutil_thread_create \n");
-    else
-        printf("failure - test_axutil_thread_create - axutil_thread_create \n");
+    EXPECT_NOT_NULL(t1);
 
     j = AXIS2_MALLOC(allocator, sizeof(int));
     *j = 25;
 
-    t2 = axutil_thread_create(allocator, NULL, test_function, (void *) j);
+    t2 = axutil_thread_create(allocator, NULL, test_function1, (void *) j);
 
-    if (t2)
-        printf("success - test_axutil_thread_create - axutil_thread_create \n");
-    else
-        printf("failure - test_axutil_thread_create - axutil_thread_create \n");
+    EXPECT_NOT_NULL(t2);
 
     rv = axutil_thread_join(t1);
 
-    if (AXIS2_SUCCESS == rv)
-        printf("success - test_axutil_thread_create - axutil_thread_join \n");
-    else
-        printf
-            ("failure - thread_init - test_axutil_thread_create - axutil_thread_join \n");
+    EXPECT_EQ(rv, AXIS2_SUCCESS);
 
     rv = axutil_thread_join(t2);
 
-    if (AXIS2_SUCCESS == rv)
-        printf("success - test_axutil_thread_create - axutil_thread_join \n");
-    else
-        printf
-            ("failure - thread_init - test_axutil_thread_create - axutil_thread_join \n");
+    EXPECT_EQ(rv, AXIS2_SUCCESS);
 
+    /*Locks*/
+    EXPECT_EQ(1,value);
+
+    /*Thread once*/
+    EXPECT_EQ(2,x);
+
+    END_TEST_CASE();
 }
 
 void *AXIS2_CALL
@@ -142,133 +157,112 @@ test_function2(
     axutil_thread_t * td,
     void *param)
 {
-    printf("thread \n");
+    /*printf("thread \n");*/
     /*axutil_thread_exit(td, env->allocator); */
 
     return (void *) 1;
 }
 
 void
+test_axutil_thread_env(
+    const axutil_env_t * env)
+{
+    START_TEST_CASE("test_axutil_thread_env");
+    axutil_allocator_t *allocator = NULL;
+    int i;
+
+    axutil_thread_t *t1[THREAD_AMMOUNT];
+
+    allocator = env->allocator;
+
+    for(i=0;i < THREAD_AMMOUNT; i++)
+    {
+        t1[i] = axutil_thread_create(allocator, NULL, test_env, (void *) env);
+        EXPECT_NOT_NULL(t1[i]);
+        axutil_thread_detach(t1[i]);
+    }
+
+    END_TEST_CASE();
+}
+
+void
 test_axutil_thread_detach(
     const axutil_env_t * env)
 {
+    START_TEST_CASE("test_axutil_thread_detach");
     axutil_threadattr_t *attr = NULL;
     axutil_allocator_t *allocator = NULL;
     axis2_status_t rv = AXIS2_FAILURE;
 
     allocator = env->allocator;
     attr = axutil_threadattr_create(allocator);
-    if (!attr)
-    {
-        printf("failure - test_axutil_thread_detach\n");
-        return;
-    }
+
+    EXPECT_NOT_NULL(attr);
+
     rv = axutil_threadattr_detach_set(attr, 1);
 
-    if (AXIS2_SUCCESS != rv)
-    {
-        printf("failure - test_axutil_thread_detach\n");
-        return;
-    }
+    EXPECT_EQ(rv, AXIS2_SUCCESS);
+
     t3 = axutil_thread_create(allocator, attr, test_function2, NULL);
 
-    if (!t3)
-    {
-        printf("failure - test_axutil_thread_detach\n");
-        return;
-    }
+    EXPECT_NOT_NULL(t3);
 
     /*
      * thread is already detached - should return AXIS2_FAILURE
      */
     rv = axutil_thread_detach(t3);
 
-    if (AXIS2_FAILURE != rv)
-    {
-        printf("failure - test_axutil_thread_detach\n");
-        return;
-    }
-
+    EXPECT_EQ(rv, AXIS2_FAILURE);
     /*
      * thread is already detached - should return AXIS2_FAILURE
      * cannot join detached threads
      */
-    /*rv = axutil_thread_join(t3); */
-    if (AXIS2_FAILURE != rv)
-    {
-        printf("failure - test_axutil_thread_detach\n");
-        return;
-    }
-    printf("success - test_axutil_thread_detach\n");
+    rv = axutil_thread_join(t3);
+
+    EXPECT_EQ(rv, AXIS2_FAILURE);
+
+    AXIS2_FREE(env->allocator, attr);
+
+    END_TEST_CASE();
 }
 
 void
 test_axutil_thread_detach2(
     const axutil_env_t * env)
 {
+    START_TEST_CASE("test_axutil_thread_detach2");
+
     axutil_threadattr_t *attr = NULL;
     axutil_allocator_t *allocator = NULL;
     axis2_status_t rv = AXIS2_FAILURE;
 
     allocator = env->allocator;
     attr = axutil_threadattr_create(allocator);
-    if (!attr)
-    {
-        printf("failure - test_axutil_thread_detach2\n");
-        return;
-    }
+
+    EXPECT_NOT_NULL(attr);
 
     t4 = axutil_thread_create(allocator, attr, test_function2, NULL);
 
-    if (!t4)
-    {
-        printf("failure - test_axutil_thread_detach2\n");
-        return;
-    }
+    EXPECT_NOT_NULL(t4);
 
     /*
      * thread is not detached yet - should return AXIS2_SUCCESS
      */
     rv = axutil_thread_detach(t4);
 
-    if (AXIS2_SUCCESS != rv)
-    {
-        printf("failure - test_axutil_thread_detach\n");
-        return;
-    }
+    EXPECT_EQ(rv, AXIS2_SUCCESS);
 
     /*
      * thread is already detached - should return AXIS2_FAILURE
      * cannot join detached threads
      */
-    /*rv = axutil_thread_join(t4); */
-    if (AXIS2_FAILURE != rv)
-    {
-        printf("failure - test_axutil_thread_detach2\n");
-        return;
-    }
-    printf("success - test_axutil_thread_detach2\n");
-}
+    rv = axutil_thread_join(t4);
 
-void
-check_locks(
-    )
-{
-    if (2 == x)
-        printf("success - check_locks \n");
-    else
-        printf("failure - check_locks \n");
+    EXPECT_EQ(rv, AXIS2_FAILURE);
 
-}
+    AXIS2_FREE(env->allocator, attr);
 
-void
-check_thread_once(
-    )
-{
-    if (1 == value)
-        printf("success - check_thread_once \n");
-    else
-        printf("failure - check_thread_once \n");
+    END_TEST_CASE();
 }
 
 void
@@ -277,10 +271,9 @@ run_test_thread(
 {
     thread_init(env);
     test_axutil_thread_create(env);
-    check_locks();
-    check_thread_once();
     test_axutil_thread_detach(env);
     test_axutil_thread_detach2(env);
+    test_axutil_thread_env(env);
 
 #if defined (WIN32)
     Sleep(1000);                /*to give time for detached threads to execute */
@@ -335,11 +328,13 @@ int
 main(
     void)
 {
+    START_TEST();
     env = create_env_with_error_log();
 
     if (!env)
         return -1;
     run_test_thread(env);
 
+    END_TEST();
     return 0;
 }

@@ -23,11 +23,15 @@
 #include <axutil_allocator.h>
 #include <test_log.h>
 #include <string.h>
+#include "../test_common/axis2c_test_macros.h"
+
 const axutil_env_t *
 create_env_with_error_log(
     )
 {
     axutil_allocator_t *allocator = axutil_allocator_init(NULL);
+
+    TEST_ASSERT(allocator);
     if (!allocator)
     {
         printf("allocator is NULL\n");
@@ -66,74 +70,74 @@ test_axutil_log_write(
     const axutil_env_t * env)
 {
     char msg[32];
-    printf("\n####start of test_axutil_log_write\n\n");
+    START_TEST_CASE("test_axutil_log_write");
     strcpy(msg, "abcd test123");
-    printf("\n####end of test_axutil_log_write\n\n");
+    END_TEST_CASE();
 }
 
 void
 test_axutil_log_debug(
     const axutil_env_t * env)
 {
-    printf("\n####start of test_axutil_log_degug\n\n");
+    START_TEST_CASE("test_axutil_log_debug");
     env->log->level = AXIS2_LOG_LEVEL_DEBUG;
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI, "log_debug test %s %d", "foo", 1);
-    printf("\n####end of test_axutil_log_debug\n\n");
+    END_TEST_CASE();
 }
 
 void
 test_axutil_log_debug_off(
     const axutil_env_t * env)
 {
-    printf("\n####start of test_axutil_log_degug_off\n\n");
+    START_TEST_CASE("test_axutil_log_debug_off");
     env->log->level = AXIS2_LOG_LEVEL_ERROR;    /*log only ERROR's and CRITICAL's */
     AXIS2_LOG_DEBUG(env->log, AXIS2_LOG_SI,
                     "this should not be logged log_debug test %s %d", "foo", 1);
-    printf("\n####end of test_axutil_log_debug_off\n\n");
+    END_TEST_CASE();
 }
 
 void
 test_axutil_log_info(
     const axutil_env_t * env)
 {
-    printf("\n####start of test_axutil_log_info\n\n");
+    START_TEST_CASE("test_axutil_log_info");
     env->log->level = AXIS2_LOG_LEVEL_DEBUG;
     AXIS2_LOG_INFO(env->log, "log_info test %s %d", "foo", 1);
-    printf("\n####end of test_axutil_log_info\n\n");
+    END_TEST_CASE();
 }
 
 void
 test_axutil_log_info_off(
     const axutil_env_t * env)
 {
-    printf("\n####start of test_axutil_log_info_off\n\n");
+    START_TEST_CASE("test_axutil_log_info_off");
     env->log->level = AXIS2_LOG_LEVEL_ERROR;    /*log only ERROR's and CRITICAL's */
     AXIS2_LOG_INFO(env->log, "this should not be logged log_info test %s %d",
                    "foo", 1);
-    printf("\n####end of test_axutil_log_info_off\n\n");
+    END_TEST_CASE();
 }
 
 void
 test_axutil_log_warning(
     const axutil_env_t * env)
 {
-    printf("\n####start of test_axutil_log_warning\n\n");
+    START_TEST_CASE("test_axutil_log_warning");
     env->log->level = AXIS2_LOG_LEVEL_DEBUG;
     AXIS2_LOG_WARNING(env->log, AXIS2_LOG_SI, "log_warning test %s %d", "foo",
                       1);
-    printf("\n####end of test_axutil_log_warning\n\n");
+    END_TEST_CASE();
 }
 
 void
 test_axutil_log_warning_off(
     const axutil_env_t * env)
 {
-    printf("\n####start of test_axutil_log_warning_off\n\n");
+    START_TEST_CASE("test_axutil_log_warning_off");
     env->log->level = AXIS2_LOG_LEVEL_ERROR;    /*log only ERROR's and CRITICAL's */
     AXIS2_LOG_WARNING(env->log, AXIS2_LOG_SI,
                       "this should not be logged log_warning test %s %d", "foo",
                       1);
-    printf("\n####end of test_axutil_log_warning_off\n\n");
+    END_TEST_CASE();
 }
 
 /*no need to sent log level, should always log*/
@@ -141,9 +145,9 @@ void
 test_axutil_log_error(
     const axutil_env_t * env)
 {
-    printf("\n####start of test_axutil_log_error\n\n");
+    START_TEST_CASE("test_axutil_log_error");
     AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "log_error test %s %d", "foo", 1);
-    printf("\n####end of test_axutil_log_error\n\n");
+    END_TEST_CASE();
 }
 
 /*no need to sent log level, should always log*/
@@ -151,17 +155,16 @@ void
 test_axutil_log_critical(
     const axutil_env_t * env)
 {
-    printf("\n####start of test_axutil_log_critical\n\n");
+    START_TEST_CASE("test_axutil_log_critical");
     AXIS2_LOG_CRITICAL(env->log, AXIS2_LOG_SI, "log_critical test %s %d", "foo",
                        1);
-    printf("\n####end of test_axutil_log_critical\n\n");
+    END_TEST_CASE();
 }
 
 void
 run_test_log(
     )
 {
-    printf("\n####start of run_test_log test suite\n\n");
     const axutil_env_t *env = create_env_with_error_log();
     if (!env)
         return;
@@ -178,5 +181,5 @@ run_test_log(
     test_axutil_log_error(env);
 
     test_axutil_log_critical(env);
-    printf("\n####end of run_test_log test suite \n\n");
+    axutil_env_free(env);
 }

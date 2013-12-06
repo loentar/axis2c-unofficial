@@ -117,10 +117,14 @@ axutil_init_thread_env(
     const axutil_env_t *system_env)
 {
     axutil_error_t *error = axutil_error_create(system_env->allocator);
-    return axutil_env_create_with_error_log_thread_pool(system_env->allocator,
-                                                        error, system_env->log,
-                                                        system_env->
-                                                        thread_pool);
+    axutil_env_t * thread_env = axutil_env_create_with_error_log_thread_pool(system_env->allocator,
+                                                        error,
+                                                        system_env->log,
+                                                        system_env->thread_pool);
+    if(!thread_env)
+        AXIS2_ERROR_FREE(error);
+
+    return thread_env;
 }
 
 AXIS2_EXTERN void AXIS2_CALL
@@ -132,9 +136,17 @@ axutil_free_thread_env(
         return;
     }
 
+    axutil_thread_mutex_lock(thread_env->mutex);
     if (--(thread_env->ref) > 0)
     {
+        axutil_thread_mutex_unlock(thread_env->mutex);
         return;
+    }
+    axutil_thread_mutex_unlock(thread_env->mutex);
+
+    if (thread_env->mutex)
+    {
+        axutil_thread_mutex_destroy(thread_env->mutex);
     }
 
     /* log, thread_pool and allocator are shared, so do not free them */

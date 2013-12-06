@@ -20,56 +20,64 @@
 #include <axutil_error_default.h>
 #include <axutil_log.h>
 #include <axutil_string.h>
+#include "../test_common/axis2c_test_macros.h"
 
 void
 test_strltrim(
     const axutil_env_t * env)
 {
+    START_TEST_CASE("test_strltrim");
     axis2_char_t *s = axutil_strdup(env, "    abcd efgh    ");
     axis2_char_t *trimmed = NULL;
     trimmed = axutil_strltrim(env, s, " \t\r\n");
-    if (0 == axutil_strcmp(trimmed, "abcd efgh    "))
-        printf("axutil_strltrim successful\n");
-    else
-        printf("axutil_strltrim failed [%s]\n", trimmed);
+
+    EXPECT_STREQ(trimmed, "abcd efgh    ");
+
     if (trimmed)
         AXIS2_FREE(env->allocator, trimmed);
     if (s)
         AXIS2_FREE(env->allocator, s);
+
+    END_TEST_CASE();
 }
 
 void
 test_strrtrim(
     const axutil_env_t * env)
 {
-    axis2_char_t *s = axutil_strdup(env, "abcd efgh    ");
+    START_TEST_CASE("test_strrtrim");
+
+    axis2_char_t *s = axutil_strdup(env, "    abcd efgh    ");
     axis2_char_t *trimmed = NULL;
     trimmed = axutil_strrtrim(env, s, " \t\r\n");
-    if (0 == axutil_strcmp(trimmed, "    abcd efgh"))
-        printf("axutil_strrtrim successful\n");
-    else
-        printf("axutil_strrtrim failed [%s]\n", trimmed);
+
+    EXPECT_STREQ(trimmed, "    abcd efgh");
+
     if (trimmed)
         AXIS2_FREE(env->allocator, trimmed);
     if (s)
         AXIS2_FREE(env->allocator, s);
+
+    END_TEST_CASE();
 }
 
 void
 test_strtrim(
     const axutil_env_t * env)
 {
+    START_TEST_CASE("test_strtrim");
+
     axis2_char_t *s = axutil_strdup(env, "    abcd efgh    ");
     axis2_char_t *trimmed = NULL;
     trimmed = axutil_strtrim(env, s, " \t\r\n");
-    if (0 == axutil_strcmp(trimmed, "abcd efgh"))
-        printf("axutil_strtrim successful\n");
-    else
-        printf("axutil_strtrim failed [%s]\n", trimmed);
+
+    EXPECT_STREQ(trimmed, "abcd efgh");
     if (trimmed)
         AXIS2_FREE(env->allocator, trimmed);
     if (s)
         AXIS2_FREE(env->allocator, s);
+
+    END_TEST_CASE();
 }
 
 void

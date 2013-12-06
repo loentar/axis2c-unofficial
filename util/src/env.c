@@ -27,6 +27,7 @@ axutil_env_create(
     axutil_allocator_t *allocator)
 {
     axutil_env_t *env;
+    axutil_thread_mutex_t * mutex = NULL;
 
     if (!allocator)
         return NULL;
@@ -56,6 +57,17 @@ axutil_env_create(
        This array holds the error messages with respect to error codes */
     axutil_error_init();
 
+    mutex = axutil_thread_mutex_create(allocator, AXIS2_THREAD_MUTEX_DEFAULT);
+
+    if(mutex)
+        env->mutex = mutex;
+    else
+    {
+        AXIS2_LOG_FREE(allocator, env->log);
+		AXIS2_ERROR_FREE(env->error);
+ 		AXIS2_FREE(allocator, env);
+        return NULL;
+    }
     env->ref = 1;
 
     return env;
@@ -68,6 +80,8 @@ axutil_env_create_with_error_log(
     axutil_log_t *log)
 {
     axutil_env_t *env;
+    axutil_thread_mutex_t * mutex = NULL;
+
     if (!allocator || !error)
         return NULL;
 
@@ -88,6 +102,16 @@ axutil_env_create_with_error_log(
         env->log_enabled = AXIS2_FALSE;
 
     axutil_error_init();
+
+    mutex = axutil_thread_mutex_create(allocator, AXIS2_THREAD_MUTEX_DEFAULT);
+
+    if(mutex)
+        env->mutex = mutex;
+    else
+    {
+        AXIS2_FREE(allocator, env);
+        return NULL;
+    }
 
     env->ref = 1;
 
@@ -110,6 +134,8 @@ axutil_env_create_with_error_log_thread_pool(
     axutil_thread_pool_t *pool)
 {
     axutil_env_t *env;
+    axutil_thread_mutex_t * mutex = NULL;
+
     if (!allocator || !error || !pool)
         return NULL;
 
@@ -134,6 +160,16 @@ axutil_env_create_with_error_log_thread_pool(
 
     axutil_error_init();
 
+    mutex = axutil_thread_mutex_create(allocator, AXIS2_THREAD_MUTEX_DEFAULT);
+
+    if(mutex)
+        env->mutex = mutex;
+    else
+    {
+        AXIS2_FREE(allocator, env);
+        return NULL;
+    }
+
     env->ref = 1;
 
     return env;
@@ -151,7 +187,17 @@ axutil_env_create_all(
     axutil_thread_pool_t *thread_pool = NULL;
 
     allocator = axutil_allocator_init(NULL);
+
+    if(!allocator)
+        return NULL;
+
     error = axutil_error_create(allocator);
+
+    if(!error)
+    {
+        AXIS2_FREE(allocator, allocator);
+        return NULL;
+    }
 
     if (log_file)
     {
@@ -169,6 +215,15 @@ axutil_env_create_all(
     
     env = axutil_env_create_with_error_log_thread_pool(allocator, error, log,
                                                        thread_pool);
+    if(!env)
+    {
+        axutil_thread_pool_free(thread_pool);
+        AXIS2_LOG_FREE(allocator, log);
+        AXIS2_ERROR_FREE(error);
+        AXIS2_FREE(allocator, allocator);
+        return NULL;
+    }
+
     if (env->log)
     {
         if (AXIS2_LOG_LEVEL_CRITICAL <= log_level && log_level <= AXIS2_LOG_LEVEL_TRACE)
@@ -180,8 +235,6 @@ axutil_env_create_all(
             env->log->level = AXIS2_LOG_LEVEL_DEBUG; /* default log level is debug */
         }
     }
-
-    env->ref = 1;
 
     return env;
 }
@@ -219,12 +272,20 @@ axutil_env_free(
     if (!env)
         return;
 
+    axutil_thread_mutex_lock(env->mutex);
     if (--(env->ref) > 0)
     {
+        axutil_thread_mutex_unlock(env->mutex);
         return;
     }
+    axutil_thread_mutex_unlock(env->mutex);
     
     allocator = env->allocator;
+
+    if (env->mutex)
+    {
+        axutil_thread_mutex_destroy(env->mutex);
+    }
 
     if (env->log)
     {
@@ -262,9 +323,17 @@ axutil_env_free_masked(
     if (!env)
         return;
 
+    axutil_thread_mutex_lock(env->mutex);
     if (--(env->ref) > 0)
     {
+        axutil_thread_mutex_unlock(env->mutex);
         return;
+    }
+    axutil_thread_mutex_unlock(env->mutex);
+
+    if (env->mutex)
+    {
+        axutil_thread_mutex_destroy(env->mutex);
     }
 
     if (mask & AXIS_ENV_FREE_LOG)
@@ -294,7 +363,9 @@ axutil_env_increment_ref(
     axutil_env_t *env)
 {
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
+    axutil_thread_mutex_lock(env->mutex);
     env->ref++;
+    axutil_thread_mutex_unlock(env->mutex);
     return AXIS2_SUCCESS;
 }
 

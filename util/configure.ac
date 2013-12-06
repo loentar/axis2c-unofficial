@@ -292,6 +292,7 @@ AC_CONFIG_FILES([Makefile \
     src/minizip/Makefile \
     include/Makefile \
     test/Makefile \
+    test/env/Makefile \
     test/util/Makefile \
     test/allocator/Makefile \
     test/date_time/Makefile \
@@ -303,7 +304,6 @@ AC_CONFIG_FILES([Makefile \
     test/string_util/Makefile \
     test/uri/Makefile \
     test/url/Makefile \
-    test/utils/Makefile \
     ])
     
 AC_OUTPUT

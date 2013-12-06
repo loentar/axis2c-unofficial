@@ -662,18 +662,22 @@ axutil_hash_set_env(
     AXIS2_ENV_CHECK(env, AXIS2_FAILURE);
     if (ht)
     {
-        if (ht->env)
+        /**If the environment is the same do nothing*/
+        if(ht->env != env)
         {
-            /*since we now keep a ref count in env and incrementing it
-             *inside hash_make we need to free the env.Depending on the
-              situation the env struct is freed or ref count will be 
-              decremented.*/
+            if (ht->env)
+            {
+                /*since we now keep a ref count in env and incrementing it
+                 *inside hash_make we need to free the env.Depending on the
+                  situation the env struct is freed or ref count will be
+                  decremented.*/
 
-            axutil_free_thread_env((axutil_env_t*)(ht->env));
-            ht->env = NULL;
+                axutil_free_thread_env((axutil_env_t*)(ht->env));
+                ht->env = NULL;
+            }
+            ht->env = env;
+            axutil_env_increment_ref((axutil_env_t*)env);
         }
-        ht->env = env;
-        axutil_env_increment_ref((axutil_env_t*)env);
     }
 }
 

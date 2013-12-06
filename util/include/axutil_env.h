@@ -74,6 +74,10 @@ extern "C"
         /** Thread pool routines */
         axutil_thread_pool_t *thread_pool;
 
+        /** Mutex for atomic operations */
+        axutil_thread_mutex_t * mutex;
+
+        /** Reference count */
         int ref;
     }
     axutil_env_t;
