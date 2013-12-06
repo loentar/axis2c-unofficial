@@ -26,6 +26,7 @@
 #include <axutil_log_default.h>
 #include <axutil_log.h>
 #include <axutil_dir_handler.h>
+#include <axutil_thread_pool.h>
 #include <axutil_file.h>
 #include "axutil_log.h"
 #include "test_thread.h"
@@ -48,24 +49,10 @@ test_init(
     return env;
 }
 
-int
-test_hash_get(
-    const axutil_env_t * env)
+void test_parse_url(
+        const axutil_env_t * env)
 {
-    START_TEST_CASE("test_hash_get");
-    axutil_hash_t *ht;
-    a *a1,
-    *a2,
-    *a3,
-    *a4;
-
-    axutil_hash_index_t *i = 0;
-    void *v = NULL;
-
-    char *key1 = "key1";
-    char *key2 = "key2";
-    char *key3 = "key3";
-    char *key4 = "key4";
+    START_TEST_CASE("test_parse_url");
     int cnt = 0;
     axis2_char_t ***rettt = NULL;
     axis2_status_t stat = AXIS2_FAILURE;
@@ -79,10 +66,53 @@ test_hash_get(
     AXIS2_FREE(env->allocator, (*rettt)[1]);
     AXIS2_FREE(env->allocator, *rettt);
     AXIS2_FREE(env->allocator, rettt);
+
 /*    rettt = axutil_parse_rest_url_for_params(env, "echoString/{a}re/{b}?", "/echoString/more/sum/?");
     rettt = axutil_parse_rest_url_for_params(env, "/ech{c}tring{a}more/{b}/", "/echoStringma/nymore/sum?");
     rettt = axutil_parse_rest_url_for_params(env, "echoString/{a}/more/{b}?{c}", "echoString/many/more/sum/");
     rettt = axutil_parse_rest_url_for_params(env, "echoString/{a}/more/{b}/?", "echoString/many/more/sum/?test=");*/
+
+    END_TEST_CASE();
+}
+
+int
+test_hash_get()
+{
+    START_TEST_CASE("test_hash_get");
+
+    axutil_env_t *env = NULL;
+    axutil_env_t *thread_env1 = NULL;
+    axutil_env_t *thread_env2 = NULL;
+
+    axutil_allocator_t *allocator = axutil_allocator_init(NULL);
+    axutil_error_t *error = axutil_error_create(allocator);
+    axutil_log_t *log = axutil_log_create(allocator, NULL, "test_hash_get.log");
+    axutil_thread_pool_t *thread_pool = axutil_thread_pool_init(allocator);
+
+    env = axutil_env_create_with_error_log_thread_pool(allocator,
+                                                       error,
+                                                       log,
+                                                       thread_pool);
+
+    /*Simulate that the hash is running on a separate thread*/
+    thread_env1 = axutil_init_thread_env(env);
+
+
+    EXPECT_NOT_NULL(env);
+
+    axutil_hash_t *ht;
+    a *a1,
+    *a2,
+    *a3,
+    *a4;
+
+    axutil_hash_index_t *i = 0;
+    void *v = NULL;
+
+    char *key1 = "key1";
+    char *key2 = "key2";
+    char *key3 = "key3";
+    char *key4 = "key4";
 
     a1 = (a *) AXIS2_MALLOC(env->allocator, sizeof(a));
     a2 = (a *) AXIS2_MALLOC(env->allocator, sizeof(a));
@@ -94,27 +124,81 @@ test_hash_get(
     a3->value = axutil_strdup(env, "value3");
     a4->value = axutil_strdup(env, "value4");
 
-    ht = axutil_hash_make(env);
+    ht = axutil_hash_make(thread_env1);
+
+    EXPECT_EQ(axutil_hash_count(ht),0);
 
     axutil_hash_set(ht, key1, AXIS2_HASH_KEY_STRING, a1);
     axutil_hash_set(ht, key2, AXIS2_HASH_KEY_STRING, a2);
     axutil_hash_set(ht, key3, AXIS2_HASH_KEY_STRING, a3);
     axutil_hash_set(ht, key4, AXIS2_HASH_KEY_STRING, a4);
 
+    /* NULL Hash table, shouldn't crash */
+    axutil_hash_set(NULL, key4, AXIS2_HASH_KEY_STRING, a4);
+
     axutil_hash_set(ht, key2, AXIS2_HASH_KEY_STRING, NULL);
     axutil_hash_set(ht, key2, AXIS2_HASH_KEY_STRING, a2);
 
-    for (i = axutil_hash_first(ht, env); i; i = axutil_hash_next(env, i))
-    {
-        axutil_hash_this(i, NULL, NULL, &v);
-    }
+    /* Test external iterator*/
+    i = axutil_hash_first(ht, thread_env1);
+    EXPECT_NOT_NULL(i);
+    axutil_hash_this(i, NULL, NULL, &v);
+    EXPECT_STREQ(((a *)v)->value, "value1");
+
+    i = axutil_hash_next(thread_env1, i);
+    EXPECT_NOT_NULL(i);
+    axutil_hash_this(i, NULL, NULL, &v);
+    EXPECT_STREQ(((a *)v)->value, "value2");
+
+    i = axutil_hash_next(thread_env1, i);
+    EXPECT_NOT_NULL(i);
+    axutil_hash_this(i, NULL, NULL, &v);
+    EXPECT_STREQ(((a *)v)->value, "value3");
+
+    i = axutil_hash_next(thread_env1, i);
+    EXPECT_NOT_NULL(i);
+    axutil_hash_this(i, NULL, NULL, &v);
+    EXPECT_STREQ(((a *)v)->value, "value4");
+
+    /*The iterator is external, should release*/
+    AXIS2_FREE(thread_env1->allocator, i);
+
+    /* Test internal iterator*/
+    i = axutil_hash_first(ht, NULL);
+    EXPECT_NOT_NULL(i);
+    axutil_hash_this(i, NULL, NULL, &v);
+    EXPECT_STREQ(((a *)v)->value, "value1");
+
+    i = axutil_hash_next(NULL, i);
+    EXPECT_NOT_NULL(i);
+    axutil_hash_this(i, NULL, NULL, &v);
+    EXPECT_STREQ(((a *)v)->value, "value2");
+
+    i = axutil_hash_next(NULL, i);
+    EXPECT_NOT_NULL(i);
+    axutil_hash_this(i, NULL, NULL, &v);
+    EXPECT_STREQ(((a *)v)->value, "value3");
+
+    i = axutil_hash_next(NULL, i);
+    EXPECT_NOT_NULL(i);
+    axutil_hash_this(i, NULL, NULL, &v);
+    EXPECT_STREQ(((a *)v)->value, "value4");
+
+    /* NULL index, shouldn't crash */
+    axutil_hash_this(NULL, NULL, NULL, NULL);
+
+    EXPECT_EQ(axutil_hash_count(ht),4);
 
     EXPECT_STREQ(((a *) axutil_hash_get(ht, key1, AXIS2_HASH_KEY_STRING))->value, "value1");
     EXPECT_STREQ(((a *) axutil_hash_get(ht, key2, AXIS2_HASH_KEY_STRING))->value, "value2");
     EXPECT_STREQ(((a *) axutil_hash_get(ht, key3, AXIS2_HASH_KEY_STRING))->value, "value3");
     EXPECT_STREQ(((a *) axutil_hash_get(ht, key4, AXIS2_HASH_KEY_STRING))->value, "value4");
 
-    axutil_hash_free(ht, env);
+    EXPECT_NULL(axutil_hash_get(NULL, key4, AXIS2_HASH_KEY_STRING));
+
+    /* Set the same environment again, shouldn't crash*/
+    axutil_hash_set_env(ht,thread_env1);
+
     AXIS2_FREE(env->allocator, a1->value);
     AXIS2_FREE(env->allocator, a2->value);
     AXIS2_FREE(env->allocator, a3->value);
@@ -123,6 +207,19 @@ test_hash_get(
     AXIS2_FREE(env->allocator, a2);
     AXIS2_FREE(env->allocator, a3);
     AXIS2_FREE(env->allocator, a4);
+
+    axutil_free_thread_env(thread_env1);
+
+    /* NULL Hash table, shouldn't crash */
+    axutil_hash_free(NULL, env);
+
+    axutil_env_free_masked(env,AXIS_ENV_FREE_ERROR);
+
+    axutil_hash_free(ht, thread_env1);
+
+    AXIS2_LOG_FREE(allocator, log);
+    axutil_thread_pool_free(thread_pool);
+    AXIS2_FREE(allocator, allocator);
 
     END_TEST_CASE();
     return 0;
@@ -352,7 +449,7 @@ main(
 {
     START_TEST();
     axutil_env_t *env = test_init();
-    test_hash_get(env);
+    test_hash_get();
     test_file_diff(env);
     test_array_list(env);
     test_uuid_gen(env);
@@ -360,11 +457,11 @@ main(
     run_test_log();
     run_test_string(env);
     test_quote_string(env);
+    test_parse_url(env);
     /*test_axutil_dir_handler_list_service_or_module_dirs();*/
     axutil_allocator_t *allocator = env->allocator;
 
     axutil_env_free(env);
-/*    axutil_allocator_free(allocator);*/
     END_TEST();
     return 0;
 }
