@@ -449,12 +449,12 @@ main(
 {
     START_TEST();
     axutil_env_t *env = test_init();
+    run_test_log();
     test_hash_get();
     test_file_diff(env);
     test_array_list(env);
     test_uuid_gen(env);
     test_md5(env);
-    run_test_log();
     run_test_string(env);
     test_quote_string(env);
     test_parse_url(env);

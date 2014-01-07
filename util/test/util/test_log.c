@@ -15,7 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <axutil_error_default.h>
 #include <axutil_log.h>
@@ -161,11 +162,49 @@ test_axutil_log_critical(
     END_TEST_CASE();
 }
 
+/*Test that stderr continues open after closing the log (AXIS2C-1655)*/
+void
+test_keep_stderr_open()
+{
+    START_TEST_CASE("test_keep_stderr_open");
+
+    axutil_allocator_t *allocator = axutil_allocator_init(NULL);
+    axutil_env_t *env = axutil_env_create(allocator);
+
+    axutil_log_t *log = axutil_log_create(allocator, NULL, "||Invalid path||");
+
+
+    /*Detect if stderr has closed*/
+    int is_valid_fd = (fcntl(stderr->_fileno, F_GETFD) != -1 || errno != EBADF);
+
+    EXPECT_EQ(1, is_valid_fd);
+
+    AXIS2_LOG_FREE(allocator, log);
+
+    is_valid_fd = (fcntl(stderr->_fileno, F_GETFD) != -1 || errno != EBADF);
+
+    EXPECT_EQ(1, is_valid_fd);
+
+    axutil_log_t *log2 = axutil_log_create_default(allocator);
+
+    AXIS2_LOG_FREE(allocator, log2);
+
+    is_valid_fd = (fcntl(stderr->_fileno, F_GETFD) != -1 || errno != EBADF);
+
+    EXPECT_EQ(1, is_valid_fd);
+
+    axutil_env_free(env);
+
+
+    END_TEST_CASE();
+}
+
+
 void
 run_test_log(
     )
 {
-    const axutil_env_t *env = create_env_with_error_log();
+    axutil_env_t *env = create_env_with_error_log();
     if (!env)
         return;
     test_axutil_log_write(env);
@@ -181,5 +220,6 @@ run_test_log(
     test_axutil_log_error(env);
 
     test_axutil_log_critical(env);
+    test_keep_stderr_open();
     axutil_env_free(env);
 }
