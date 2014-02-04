@@ -40,12 +40,11 @@ typedef struct a
 a;
 
 axutil_env_t *
-test_init(
-    )
+test_init()
 {
     axutil_allocator_t *allocator = axutil_allocator_init(NULL);
     axutil_error_t *error = axutil_error_create(allocator);
-    const axutil_env_t *env = axutil_env_create_with_error(allocator, error);
+    axutil_env_t *env = axutil_env_create_with_error(allocator, error);
     return env;
 }
 
@@ -57,20 +56,31 @@ void test_parse_url(
     axis2_char_t ***rettt = NULL;
     axis2_status_t stat = AXIS2_FAILURE;
     stat = axutil_parse_rest_url_for_params(env, "ech{a}tring", "/echoString?text=Hello%20World%21", &cnt, &rettt);
+    EXPECT_EQ(stat,AXIS2_SUCCESS);
+
     AXIS2_FREE(env->allocator, (*rettt)[0]);
     AXIS2_FREE(env->allocator, (*rettt)[1]);
     AXIS2_FREE(env->allocator, *rettt);
     AXIS2_FREE(env->allocator, rettt);
     stat = axutil_parse_rest_url_for_params(env, "{a}ny/mor/sum", "echoStringmany/mor/sum", &cnt, &rettt);
+    EXPECT_EQ(stat,AXIS2_SUCCESS);
+
     AXIS2_FREE(env->allocator, (*rettt)[0]);
     AXIS2_FREE(env->allocator, (*rettt)[1]);
     AXIS2_FREE(env->allocator, *rettt);
     AXIS2_FREE(env->allocator, rettt);
 
-/*    rettt = axutil_parse_rest_url_for_params(env, "echoString/{a}re/{b}?", "/echoString/more/sum/?");
+    /*stat = axutil_parse_rest_url_for_params(env, "echoString/{a}re/{b}?", "/echoString/more/sum/?", &cnt, &rettt);
+    EXPECT_EQ(stat,AXIS2_SUCCESS);
+    AXIS2_FREE(env->allocator, (*rettt)[0]);
+    AXIS2_FREE(env->allocator, (*rettt)[1]);
+    AXIS2_FREE(env->allocator, *rettt);
+    AXIS2_FREE(env->allocator, rettt);
+
     rettt = axutil_parse_rest_url_for_params(env, "/ech{c}tring{a}more/{b}/", "/echoStringma/nymore/sum?");
     rettt = axutil_parse_rest_url_for_params(env, "echoString/{a}/more/{b}?{c}", "echoString/many/more/sum/");
-    rettt = axutil_parse_rest_url_for_params(env, "echoString/{a}/more/{b}/?", "echoString/many/more/sum/?test=");*/
+    rettt = axutil_parse_rest_url_for_params(env, "echoString/{a}/more/{b}/?", "echoString/many/more/sum/?test=");
+    */
 
     END_TEST_CASE();
 }
@@ -82,7 +92,6 @@ test_hash_get()
 
     axutil_env_t *env = NULL;
     axutil_env_t *thread_env1 = NULL;
-    axutil_env_t *thread_env2 = NULL;
 
     axutil_allocator_t *allocator = axutil_allocator_init(NULL);
     axutil_error_t *error = axutil_error_create(allocator);
@@ -226,8 +235,7 @@ test_hash_get()
 }
 
 void
-test_axutil_dir_handler_list_service_or_module_dirs(
-    )
+test_axutil_dir_handler_list_service_or_module_dirs()
 {
     START_TEST_CASE("test_axutil_dir_handler_list_service_or_module_dirs");
     int i,
@@ -237,10 +245,10 @@ test_axutil_dir_handler_list_service_or_module_dirs(
     axutil_allocator_t *allocator = axutil_allocator_init(NULL);
     axutil_error_t *error = axutil_error_create(allocator);
     axutil_log_t *log = axutil_log_create(allocator, NULL, NULL);
-    const axutil_env_t *env =
+    axutil_env_t *env =
         axutil_env_create_with_error_log(allocator, error, log);
 
-    axis2_char_t *pathname = axutil_strdup(env, "/tmp/test/");
+    axis2_char_t *pathname = axutil_strdup(env, ".");
 
     axutil_array_list_t *arr_folders =
         axutil_dir_handler_list_service_or_module_dirs(env, pathname);
@@ -248,15 +256,25 @@ test_axutil_dir_handler_list_service_or_module_dirs(
     TEST_ASSERT_VOID(arr_folders);
 
     isize = axutil_array_list_size(arr_folders, env);
-    printf("Folder array size = %d \n", isize);
+    /*printf("Folder array size = %d \n", isize);*/
+
+    EXPECT_GT(isize,0);
 
     for (i = 0; i < isize; ++i)
     {
         file = (axutil_file_t *) axutil_array_list_get(arr_folders, env, i);
+
+        TEST_ASSERT_VOID(file);
         filename = axutil_file_get_name(file, env);
-        printf("filename = %s \n", filename);
+        TEST_ASSERT_VOID(filename);
+
+        axutil_file_free(file,env);
+        /*printf("filename = %s \n", filename);*/
     }
 
+    axutil_array_list_free(arr_folders,env);
+    AXIS2_FREE(env->allocator, pathname);
+    axutil_env_free(env);
     END_TEST_CASE();
 }
 
@@ -458,8 +476,7 @@ main(
     run_test_string(env);
     test_quote_string(env);
     test_parse_url(env);
-    /*test_axutil_dir_handler_list_service_or_module_dirs();*/
-    axutil_allocator_t *allocator = env->allocator;
+    test_axutil_dir_handler_list_service_or_module_dirs();
 
     axutil_env_free(env);
     END_TEST();

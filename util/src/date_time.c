@@ -843,7 +843,7 @@ axutil_date_time_local_to_utc(
     axutil_date_time_t *ret = NULL;
 
     year = date_time->year;
-    mon = date_time->mon;
+    mon = date_time->mon+1;
     day = date_time->day;
     hour = date_time->hour;
     min = date_time->min;
@@ -882,32 +882,18 @@ axutil_date_time_local_to_utc(
         hour += 24;
     }
 
-    mon--;
-    while (mon < 0)
-    {
-        mon += 12;
-        year--;
-    }
-    while (mon > 11)
-    {
-        mon -= 12;
-        year++;
-    }
-    mon++;
-
-    day--;
     while (day > 27)
     {
         if (mon == 2)
         {
             if (year % 4 != 0 || year % 400 == 0)
             {
-                day -= 28;
+                day = 28;
                 mon++;
             }
             else if (day > 28)
             {
-                day -= 29;
+                day = 29;
                 mon++;
             }
             else
@@ -920,11 +906,11 @@ axutil_date_time_local_to_utc(
             if (mon == 4 || mon == 6 ||
                 mon == 9 || mon == 11)
             {
-                day -= 30;
+                day = 30;
             }
             else if (day > 30)
             {
-                day -= 31;
+                day = 31;
             }
             else
             {
@@ -942,11 +928,11 @@ axutil_date_time_local_to_utc(
             year++;
         }
     }
-    while (day < 0)
+    while (day < 1)
     {
         if (mon == 3)
         {
-            day += 28;
+            day = 28;
             if (year % 4 == 0 || year % 400 != 0)
             {
                 day++;
@@ -955,11 +941,11 @@ axutil_date_time_local_to_utc(
         if (mon == 5 || mon == 7 ||
             mon == 10 || mon == 12)
         {
-            day += 30;
+            day = 30;
         }
         else
         {
-            day += 31;
+            day = 31;
         }
         mon--;
         if (mon < 1)
@@ -968,7 +954,6 @@ axutil_date_time_local_to_utc(
             year--;
         }
     }
-    day++;
 
     if (mon < 1 || mon > 12)
     {
@@ -1008,8 +993,8 @@ axutil_date_time_local_to_utc(
     }
 
     ret = axutil_date_time_create(env);
-    ret->year = year - 1900;
-    ret->mon = mon - 1;
+    ret->year = year;
+    ret->mon = mon-1;
     ret->day = day;
     ret->hour = hour;
     ret->min = min;
@@ -1031,6 +1016,9 @@ axutil_date_time_utc_to_local(
     {
         return NULL;
     }
+
+    date_time = axutil_date_time_create(env);
+
     date_time->year = date_time_in->year;
     date_time->mon = date_time_in->mon;
     date_time->day = date_time_in->day;
@@ -1042,6 +1030,10 @@ axutil_date_time_utc_to_local(
     
     date_time->tz_pos = is_positive ? AXIS2_FALSE : AXIS2_TRUE;
     ret = axutil_date_time_local_to_utc(date_time, env);
+
+    if(!ret)
+    	return NULL;
+
     ret->tz_hour = hour;
     ret->tz_min = min;
     

@@ -74,7 +74,23 @@ if (!EXPR)\
 }\
 }
 
-#define EXPECT_NEQ(TEXT, EXPR) \
+#define TEST_ERROR(TEXT)\
+{\
+	TEST_FAILURE_PRINT\
+	printf("%s\n",TEXT);\
+	expresions_failed++;\
+}
+
+#define TEST_ABORT(TEXT)\
+{\
+	TEST_FAILURE_PRINT\
+	printf("%s\n",TEXT);\
+	expresions_failed++;\
+    END_TEST_CASE()\
+    return;\
+}
+
+#define EXPECT_NEQ(VAL1, VAL2) \
 {\
 __typeof(VAL1) var_val1=VAL1;\
 __typeof(VAL2) var_val2=VAL2;\
@@ -100,6 +116,21 @@ if (var_val1 == var_val2)\
 {\
     TEST_FAILURE_PRINT\
     printf("Expected %i, received %i\n",var_val1,var_val2);\
+    expresions_failed++;\
+}\
+}
+
+#define EXPECT_GT(VAL1, VAL2) \
+{\
+__typeof(VAL1) var_val1=VAL1;\
+__typeof(VAL2) var_val2=VAL2;\
+if (var_val1 > var_val2)\
+{\
+    expresions_ok++;\
+}else\
+{\
+    TEST_FAILURE_PRINT\
+    printf("Expected %i to be greater than %i\n",var_val1,var_val2);\
     expresions_failed++;\
 }\
 }
@@ -145,6 +176,7 @@ else\
     expresions_failed++;\
 }\
 }
+
 
 #define EXPECT_STRNEQ(STR1, STR2) \
 {\
