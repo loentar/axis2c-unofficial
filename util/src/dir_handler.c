@@ -31,17 +31,8 @@
 
 extern int AXIS2_ALPHASORT(
     );
-#ifdef IS_MACOSX
-int dir_select(
-    struct dirent *entry);
 int file_select(
     const struct dirent *entry);
-#else
-int dir_select(
-    const struct dirent *entry);
-int file_select(
-    const struct dirent *entry); 
-#endif
 
 /**
  * List the dll files in the given service or module folder path
@@ -185,33 +176,35 @@ axutil_dir_handler_list_service_or_module_dirs(
     const axis2_char_t *pathname)
 {
     axutil_array_list_t *file_list = NULL;
-    struct stat *buf = NULL;
+    struct stat buf;
     int count = 1;
     int i = 0;
     struct dirent **files = NULL;
+#ifdef AXIS2_ARCHIVE_ENABLED
     char cwd[500];
-    int chdir_result = 0;
 
     /**FIXME:
      * This magic number 500 was selected as a temperary solution. It has to be
      * replaced with dinamic memory allocation. This will be done once the use of
      * errno after getwcd() on Windows is figured out.
      */
+#endif
 
     axis2_status_t status = AXIS2_FAILURE;
     AXIS2_ENV_CHECK(env, NULL);
     file_list = axutil_array_list_create(env, 0);
+
+#ifdef AXIS2_ARCHIVE_ENABLED
     if (!AXIS2_GETCWD(cwd, 500))
         exit(1);
 
     /* pathname is path of services directory or modules directory. */
-    chdir_result =  AXIS2_CHDIR(pathname);
-#ifdef AXIS2_ARCHIVE_ENABLED
+    AXIS2_CHDIR(pathname);
     axis2_archive_extract();
+    AXIS2_CHDIR(cwd);
 #endif
 
-    count = AXIS2_SCANDIR(pathname, &files, dir_select, AXIS2_ALPHASORT);
-    chdir_result = AXIS2_CHDIR(cwd);
+    count = AXIS2_SCANDIR(pathname, &files, NULL, AXIS2_ALPHASORT);
 
     /* If no files found, make a non-selectable menu item */
     if (count <= 0)
@@ -226,9 +219,42 @@ axutil_dir_handler_list_service_or_module_dirs(
         axis2_char_t *fname = NULL;
         axutil_file_t *arch_file = NULL;
         axis2_char_t *path = NULL;
-        axis2_char_t *temp_path = NULL;
 
         fname = files[i - 1]->d_name;
+
+        if (fname[0] == '.')
+            continue;
+
+        path = axutil_strcat(env, pathname, AXIS2_PATH_SEP_STR, fname, NULL);
+        if (!path)
+        {
+            int size = 0;
+            int j = 0;
+            axutil_file_t *del_file = NULL;
+
+            size = axutil_array_list_size(file_list, env);
+            for (j = 0; j < size; j++)
+            {
+                del_file = axutil_array_list_get(file_list, env, j);
+                axutil_file_free(del_file, env);
+            }
+            axutil_array_list_free(file_list, env);
+            AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
+            return NULL;
+        }
+
+        if (stat(path, &buf) != 0)
+        {
+            AXIS2_FREE(env->allocator, path);
+            continue;
+        }
+
+        if (!S_ISDIR(buf.st_mode))
+        {
+            AXIS2_FREE(env->allocator, path);
+            continue;
+        }
+
         arch_file = (axutil_file_t *) axutil_file_create(env);
         if (!arch_file)
         {
@@ -247,48 +273,8 @@ axutil_dir_handler_list_service_or_module_dirs(
             return NULL;
         }
         axutil_file_set_name(arch_file, env, fname);
-        temp_path = axutil_stracat(env, pathname, AXIS2_PATH_SEP_STR);
-        path = axutil_stracat(env, temp_path, fname);
-        if (!path)
-        {
-            int size = 0;
-            int j = 0;
-            axutil_file_t *del_file = NULL;
-
-            axutil_file_free(arch_file, env);
-            size = axutil_array_list_size(file_list, env);
-            for (j = 0; j < size; j++)
-            {
-                del_file = axutil_array_list_get(file_list, env, j);
-                axutil_file_free(del_file, env);
-            }
-            axutil_array_list_free(file_list, env);
-            AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
-            return NULL;
-        }
         axutil_file_set_path(arch_file, env, path);
-        AXIS2_FREE(env->allocator, temp_path);
-        buf = AXIS2_MALLOC(env->allocator, sizeof(struct stat));
-        if (!buf)
-        {
-            int size = 0;
-            int j = 0;
-            axutil_file_t *del_file = NULL;
-
-            axutil_file_free(arch_file, env);
-            AXIS2_FREE(env->allocator, path);
-            size = axutil_array_list_size(file_list, env);
-            for (j = 0; j < size; j++)
-            {
-                del_file = axutil_array_list_get(file_list, env, j);
-                axutil_file_free(del_file, env);
-            }
-            axutil_array_list_free(file_list, env);
-            AXIS2_ERROR_SET(env->error, AXIS2_ERROR_NO_MEMORY, AXIS2_FAILURE);
-            return NULL;
-        }
-        stat(path, buf);
-        axutil_file_set_timestamp(arch_file, env, (time_t) buf->st_ctime);
+        axutil_file_set_timestamp(arch_file, env, (time_t) buf.st_ctime);
         status = axutil_array_list_add(file_list, env, arch_file);
         if (AXIS2_SUCCESS != status)
         {
@@ -298,7 +284,6 @@ axutil_dir_handler_list_service_or_module_dirs(
 
             axutil_file_free(arch_file, env);
             AXIS2_FREE(env->allocator, path);
-            AXIS2_FREE(env->allocator, buf);
             size = axutil_array_list_size(file_list, env);
             for (j = 0; j < size; j++)
             {
@@ -309,7 +294,6 @@ axutil_dir_handler_list_service_or_module_dirs(
             return NULL;
         }
         AXIS2_FREE(env->allocator, path);
-        AXIS2_FREE(env->allocator, buf);
     }
 
     for (i = 0; i < count; i++)
@@ -346,27 +330,4 @@ file_select(
     }
     else
         return (AXIS2_FALSE);
-}
-
-#ifdef IS_MACOSX
-int
-dir_select(
-    struct dirent *entry)
-#else
-int
-dir_select(
-    const struct dirent *entry)
-#endif
-{
-    struct stat stat_p;
-
-    if (-1 == stat(entry->d_name, &stat_p))
-        return (AXIS2_FALSE);
-
-    if ((entry->d_name[0] == '.') || (!S_ISDIR(stat_p.st_mode)))
-    {
-        return (AXIS2_FALSE);
-    }
-
-    return AXIS2_TRUE;
 }
