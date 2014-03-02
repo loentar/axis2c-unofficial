@@ -45,6 +45,8 @@
 #include <axutil_class_loader.h>
 
 #ifdef AXIS2_JSON_ENABLED
+#include <axiom_soap_header.h>
+#include <axiom_soap_header_block.h>
 #include <axis2_json_reader.h>
 #endif
 
@@ -601,6 +603,7 @@ axis2_http_transport_utils_process_http_post_request(
         axis2_json_reader_t* json_reader = NULL;
         axiom_soap_body_t* soap_body = NULL;
         axiom_node_t* root_node = NULL;
+        axiom_node_t* headers_node = NULL;
 
         json_reader = axis2_json_reader_create_for_stream(env, in_stream);
         if (!json_reader)
@@ -622,12 +625,63 @@ axis2_http_transport_utils_process_http_post_request(
             return AXIS2_FAILURE;
         }
 
+        headers_node = axis2_json_reader_get_headers_node(json_reader, env);
+
         axis2_json_reader_free(json_reader, env);
 
         soap_envelope =
                 axiom_soap_envelope_create_default_soap_envelope(env, AXIOM_SOAP11);
         soap_body = axiom_soap_envelope_get_body(soap_envelope, env);
         axiom_soap_body_add_child(soap_body, env, root_node);
+
+        if (headers_node)
+        {
+            axiom_element_t* elem = NULL;
+            axiom_element_t* base_elem = NULL;
+            const axis2_char_t* name = NULL;
+            const axis2_char_t* value = NULL;
+            axiom_node_t* node = NULL;
+            axiom_node_t* base_node = NULL;
+            axiom_soap_header_t* soap_header =
+                    axiom_soap_envelope_get_header(soap_envelope, env);
+            axiom_soap_header_block_t* header_block = NULL;
+            axiom_namespace_t* ns = NULL;
+
+            for (node = axiom_node_get_first_child(headers_node, env);
+                 node; node = axiom_node_get_next_sibling(node, env))
+            {
+                if (axiom_node_get_node_type(node, env) != AXIOM_ELEMENT)
+                    continue;
+
+                elem = (axiom_element_t*)axiom_node_get_data_element(node, env);
+                if (!elem)
+                    continue;
+
+                name = axiom_element_get_localname(elem, env);
+                if (!name)
+                    continue;
+
+                value = axiom_element_get_text(elem, env, node);
+
+                ns = axiom_namespace_create(env, "urn:json", "s");
+
+                header_block = axiom_soap_header_add_header_block(soap_header, env,
+                                                                name, ns);
+
+                axiom_namespace_free(ns, env);
+
+                if (value)
+                {
+                    base_node = axiom_soap_header_block_get_base_node(header_block, env);
+                    base_elem = (axiom_element_t*)axiom_node_get_data_element(base_node, env);
+
+                    axiom_element_set_text(base_elem, env, value, base_node);
+                }
+            }
+
+            axiom_node_free_tree(headers_node, env);
+        }
+
         axis2_msg_ctx_set_doing_json(msg_ctx, env, AXIS2_TRUE);
         axis2_msg_ctx_set_doing_rest(msg_ctx, env, AXIS2_TRUE);
         axis2_msg_ctx_set_rest_http_method(msg_ctx, env, AXIS2_HTTP_POST);
@@ -886,6 +940,13 @@ axis2_http_transport_utils_process_http_post_request(
         AXIS2_FREE(env->allocator, soap_action);
         soap_action = NULL;
     }
+#ifdef AXIS2_JSON_ENABLED
+    if (axis2_msg_ctx_get_doing_json(msg_ctx, env))
+    {
+        /* xml reader is not created in JSON mode, so freeing callback_ctx here */
+        AXIS2_FREE(env->allocator, callback_ctx);
+    }
+#endif
     return status;
 }
 
@@ -1116,6 +1177,7 @@ axis2_http_transport_utils_process_http_put_request(
         axis2_json_reader_t* json_reader = NULL;
         axiom_soap_body_t* soap_body = NULL;
         axiom_node_t* root_node = NULL;
+        axiom_node_t* headers_node = NULL;
 
         json_reader = axis2_json_reader_create_for_stream(env, in_stream);
         if (!json_reader)
@@ -1137,12 +1199,63 @@ axis2_http_transport_utils_process_http_put_request(
             return AXIS2_FAILURE;
         }
 
+        headers_node = axis2_json_reader_get_headers_node(json_reader, env);
+
         axis2_json_reader_free(json_reader, env);
 
         soap_envelope =
                 axiom_soap_envelope_create_default_soap_envelope(env, AXIOM_SOAP11);
         soap_body = axiom_soap_envelope_get_body(soap_envelope, env);
         axiom_soap_body_add_child(soap_body, env, root_node);
+
+        if (headers_node)
+        {
+            axiom_element_t* elem = NULL;
+            axiom_element_t* base_elem = NULL;
+            const axis2_char_t* name = NULL;
+            const axis2_char_t* value = NULL;
+            axiom_node_t* node = NULL;
+            axiom_node_t* base_node = NULL;
+            axiom_soap_header_t* soap_header =
+                    axiom_soap_envelope_get_header(soap_envelope, env);
+            axiom_soap_header_block_t* header_block = NULL;
+            axiom_namespace_t* ns = NULL;
+
+            for (node = axiom_node_get_first_child(headers_node, env);
+                 node; node = axiom_node_get_next_sibling(node, env))
+            {
+                if (axiom_node_get_node_type(node, env) != AXIOM_ELEMENT)
+                    continue;
+
+                elem = (axiom_element_t*)axiom_node_get_data_element(node, env);
+                if (!elem)
+                    continue;
+
+                name = axiom_element_get_localname(elem, env);
+                if (!name)
+                    continue;
+
+                value = axiom_element_get_text(elem, env, node);
+
+                ns = axiom_namespace_create(env, "urn:json", "s");
+
+                header_block = axiom_soap_header_add_header_block(soap_header, env,
+                                                                name, ns);
+
+                axiom_namespace_free(ns, env);
+
+                if (value)
+                {
+                    base_node = axiom_soap_header_block_get_base_node(header_block, env);
+                    base_elem = (axiom_element_t*)axiom_node_get_data_element(base_node, env);
+
+                    axiom_element_set_text(base_elem, env, value, base_node);
+                }
+            }
+
+            axiom_node_free_tree(headers_node, env);
+        }
+
         axis2_msg_ctx_set_doing_json(msg_ctx, env, AXIS2_TRUE);
         axis2_msg_ctx_set_doing_rest(msg_ctx, env, AXIS2_TRUE);
         axis2_msg_ctx_set_rest_http_method(msg_ctx, env, AXIS2_HTTP_PUT);
@@ -1351,6 +1464,13 @@ axis2_http_transport_utils_process_http_put_request(
         axiom_stax_builder_free_self(om_builder, env);
         om_builder = NULL;
     }
+#ifdef AXIS2_JSON_ENABLED
+    if (axis2_msg_ctx_get_doing_json(msg_ctx, env))
+    {
+        /* xml reader is not created in JSON mode, so freeing callback_ctx here */
+        AXIS2_FREE(env->allocator, callback_ctx);
+    }
+#endif
     return status;
 }
 

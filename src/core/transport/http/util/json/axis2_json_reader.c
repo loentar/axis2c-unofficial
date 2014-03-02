@@ -23,11 +23,13 @@
 #include <axis2_json_reader.h>
 
 #define AXIS2_JSON_XSI_URI "http://www.w3.org/2001/XMLSchema-instance"
+#define AXIS2_JSON_HEADERS_NAME "@headers"
 
 struct axis2_json_reader
 {
     json_object* json_obj;
     axiom_node_t* axiom_node;
+    axiom_node_t* axiom_node_headers;
 };
 
 const char* json_tokener_error_to_str(enum json_tokener_error error)
@@ -220,6 +222,7 @@ axis2_json_reader_create_for_stream(
 
         reader->json_obj = NULL;
         reader->axiom_node = NULL;
+        reader->axiom_node_headers = NULL;
         do
         {
             readed = axutil_stream_read(stream, env, &buffer, sizeof(buffer));
@@ -302,19 +305,35 @@ axis2_json_reader_read(
 {
     json_object* json_root = NULL;
     const char* json_root_name = NULL;
+    json_object* json_headers = NULL;
 
     /* free existing om tree */
     if (reader->axiom_node)
+    {
         axiom_node_free_tree(reader->axiom_node, env);
-    reader->axiom_node = NULL;
+        reader->axiom_node = NULL;
+    }
 
-    /* get first child */
+    if (reader->axiom_node_headers)
+    {
+        axiom_node_free_tree(reader->axiom_node_headers, env);
+        reader->axiom_node_headers = NULL;
+    }
+
+    /* get root node and headers */
     {
         json_object_object_foreach(reader->json_obj, key, value)
         {
-            json_root = value;
-            json_root_name = key;
-            break;
+            if (!axutil_strcmp(AXIS2_JSON_HEADERS_NAME, key))
+            {
+                json_headers = value;
+            }
+            else
+            if (!json_root)
+            {
+                json_root = value;
+                json_root_name = key;
+            }
         }
     }
 
@@ -323,6 +342,12 @@ axis2_json_reader_read(
         AXIS2_ERROR_SET(env->error, AXIS2_ERROR_INVALID_STATE_PARAM, AXIS2_FAILURE);
         AXIS2_LOG_ERROR(env->log, AXIS2_LOG_SI, "Failed find root JSON node");
         return AXIS2_FAILURE;
+    }
+
+    if (json_headers)
+    {
+        axis2_json_read_node(json_headers, AXIS2_JSON_HEADERS_NAME,
+                             &reader->axiom_node_headers, env);
     }
 
     return axis2_json_read_node(json_root, json_root_name, &reader->axiom_node, env);
@@ -336,4 +361,13 @@ axis2_json_reader_get_root_node(
 {
     (void)env;
     return reader->axiom_node;
+}
+
+AXIS2_EXTERN axiom_node_t* AXIS2_CALL
+axis2_json_reader_get_headers_node(
+        axis2_json_reader_t* reader,
+        const axutil_env_t* env)
+{
+    (void)env;
+    return reader->axiom_node_headers;
 }

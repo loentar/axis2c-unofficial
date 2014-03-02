@@ -87,6 +87,16 @@ axis2_json_reader_get_root_node(
         axis2_json_reader_t* reader,
         const axutil_env_t* env);
 
+/**
+ * @brief Gets root node of parsed data
+ * @param reader JSON reader
+ * @param env Environment
+ */
+AXIS2_EXTERN axiom_node_t* AXIS2_CALL
+axis2_json_reader_get_headers_node(
+        axis2_json_reader_t* reader,
+        const axutil_env_t* env);
+
 #ifdef __cplusplus
 }
 #endif
