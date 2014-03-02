@@ -908,12 +908,6 @@ axis2_http_worker_process_request(
             status = AXIS2_TRUE;
             if (body_string)
                 AXIS2_FREE(env->allocator, body_string);
-
-            if (free_out_stream == AXIS2_TRUE) /* free services page stream */
-            {
-                axutil_stream_free(out_stream, env);
-                out_stream = NULL;
-            }
         }
     }
     else if (0 == axutil_strcasecmp(http_method, AXIS2_HTTP_POST) || is_put)
@@ -1188,6 +1182,7 @@ axis2_http_worker_process_request(
                 {
                     axis2_http_simple_response_set_body_string(response, env,
                                                                body_string);
+                    free_stream = AXIS2_TRUE;
                 }
                 sprintf(str_len, "%d", axutil_strlen(body_string));
                 cont_len = axis2_http_header_create(env,
@@ -1201,6 +1196,7 @@ axis2_http_worker_process_request(
 /*            axis2_http_simple_response_free(response, env); -- causes double free */
             request_handled = AXIS2_TRUE;
             status = AXIS2_TRUE;
+            free_out_stream = AXIS2_TRUE;
         }
         else if (status == AXIS2_FAILURE)
         {
@@ -2008,8 +2004,10 @@ axis2_http_worker_process_request(
             }
         }
 
-        if (out_stream)
+        if (out_stream) {
             axutil_stream_free(out_stream, env);
+            out_stream = NULL;
+        }
     }
 
     if (url_external_form)
@@ -2062,6 +2060,12 @@ axis2_http_worker_process_request(
 
     if (free_stream == AXIS2_TRUE && response)
         axutil_stream_free(axis2_http_simple_response_get_body(response, env), env);
+
+    if (free_out_stream == AXIS2_TRUE) /* free out stream */
+    {
+        axutil_stream_free(out_stream, env);
+        out_stream = NULL;
+    }
 
     axis2_msg_ctx_free(msg_ctx, env);
     msg_ctx = NULL;
