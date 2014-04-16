@@ -21,6 +21,7 @@
 #include <axis2_json_writer.h>
 
 #define AXIS2_JSON_XSI_URI "http://www.w3.org/2001/XMLSchema-instance"
+#define AXIS2_JSON_SOAPENC_URI "http://schemas.xmlsoap.org/soap/encoding/"
 
 struct axis2_json_writer
 {
@@ -42,9 +43,8 @@ axis2_bool_t axis2_json_element_is_nil(axiom_element_t* om_element, const axutil
         axutil_hash_this(index, NULL, NULL, (void**)&attr);
         if (attr && !strcmp(axiom_attribute_get_localname(attr, env), "nil"))
         {
-            /* found some "nil" attribute, check it namespace */
-            axutil_qname_t* qname =
-                    axiom_attribute_get_qname(attr, env);
+            /* found some "nil" attribute, check it's namespace */
+            axutil_qname_t* qname = axiom_attribute_get_qname(attr, env);
             if (qname && !strcmp(axutil_qname_get_uri(qname, env), AXIS2_JSON_XSI_URI))
             {
                 axis2_char_t* attr_value =
@@ -58,13 +58,40 @@ axis2_bool_t axis2_json_element_is_nil(axiom_element_t* om_element, const axutil
     return AXIS2_FALSE;
 }
 
-void axis2_json_write_node(json_object* parent, axiom_node_t* om_node, const axutil_env_t* env)
+axis2_bool_t axis2_json_element_is_array(axiom_element_t* om_element, const axutil_env_t* env)
+{
+    axiom_attribute_t* attr = NULL;
+    axutil_hash_index_t* index;
+    axutil_hash_t* attr_hash = axiom_element_get_all_attributes(om_element, env);
+
+    if (!attr_hash)
+        return AXIS2_FALSE;
+
+    for (index = axutil_hash_first(attr_hash, env);
+         index; index = axutil_hash_next(env, index))
+    {
+        axutil_hash_this(index, NULL, NULL, (void**)&attr);
+        if (attr && !strcmp(axiom_attribute_get_localname(attr, env), "arrayType"))
+        {
+            /* found some "arrayType" attribute, check it's namespace */
+            axutil_qname_t* qname = axiom_attribute_get_qname(attr, env);
+            if (qname && !strcmp(axutil_qname_get_uri(qname, env), AXIS2_JSON_SOAPENC_URI))
+                return AXIS2_TRUE;
+        }
+    }
+
+    return AXIS2_FALSE;
+}
+
+void axis2_json_write_node(json_object* parent, axiom_node_t* om_node, const axutil_env_t* env,
+                           axis2_bool_t parent_is_array)
 {
     axiom_element_t* elem;
     axiom_node_t* child_node;
     const axis2_char_t* local_name;
     json_object* obj;
     json_object* array = NULL;
+    axis2_bool_t is_array = AXIS2_FALSE;
 
     if (!om_node || axiom_node_get_node_type(om_node, env) != AXIOM_ELEMENT)
         return;
@@ -74,27 +101,42 @@ void axis2_json_write_node(json_object* parent, axiom_node_t* om_node, const axu
 
     child_node = axiom_node_get_first_element(om_node, env);
 
-    /* find existing object */
-    if (json_object_object_get_ex(parent, local_name, &obj))
+    if (!parent_is_array)
     {
-        /* check that object is array? */
-        if (!json_object_is_type(obj, json_type_array))
+        /* find existing object */
+        if (json_object_object_get_ex(parent, local_name, &obj))
         {
-            /* convert to array */
-            obj = json_object_get(obj);
-            array = json_object_new_array();
-            json_object_array_add(array, obj);
-            json_object_object_del(parent, local_name);
-            json_object_object_add(parent, local_name, array);
+            /* check that object is array? */
+            if (!json_object_is_type(obj, json_type_array))
+            {
+                /* convert to array */
+                obj = json_object_get(obj);
+                array = json_object_new_array();
+                json_object_array_add(array, obj);
+                json_object_object_del(parent, local_name);
+                json_object_object_add(parent, local_name, array);
+            }
+            else
+                array = obj;
         }
         else
-            array = obj;
+        {
+            if (axis2_json_element_is_array(elem, env))
+            {
+                array = json_object_new_array();
+                json_object_object_add(parent, local_name, array);
+                is_array = AXIS2_TRUE;
+            }
+        }
     }
 
     if (!child_node)
     {
         /* this is a leaf node */
         json_object* json_value = NULL;
+
+        if (is_array) /* don't add array element as empty item */
+            return;
 
         /* check for nillable */
         if (!axis2_json_element_is_nil(elem, env))
@@ -104,23 +146,37 @@ void axis2_json_write_node(json_object* parent, axiom_node_t* om_node, const axu
             json_value = json_object_new_string(value ? value : "");
         }
 
+        if (parent_is_array)
+            json_object_array_add(parent, json_value);
+        else
         if (array)
             json_object_array_add(array, json_value);
         else
             json_object_object_add(parent, local_name, json_value);
+
         return;
     }
 
     /* iterate through children elements */
-    obj = json_object_new_object();
-    if (array)
-        json_object_array_add(array, obj);
+    if (!is_array)
+    {
+        obj = json_object_new_object();
+        if (parent_is_array)
+            json_object_array_add(parent, obj);
+        else
+        if (array)
+            json_object_array_add(array, obj);
+        else
+            json_object_object_add(parent, local_name, obj);
+    }
     else
-        json_object_object_add(parent, local_name, obj);
+    {
+        obj = array;
+    }
 
     for (; child_node; child_node = axiom_node_get_next_sibling(child_node, env))
         if (axiom_node_get_node_type(child_node, env) == AXIOM_ELEMENT)
-            axis2_json_write_node(obj, child_node, env);
+            axis2_json_write_node(obj, child_node, env, is_array);
 }
 
 
@@ -158,7 +214,7 @@ axis2_json_writer_write(
         json_object_put(writer->json_obj);
 
     writer->json_obj = json_object_new_object();
-    axis2_json_write_node(writer->json_obj, (axiom_node_t*)node, env);
+    axis2_json_write_node(writer->json_obj, (axiom_node_t*)node, env, AXIS2_FALSE);
 }
 
 

@@ -268,6 +268,7 @@ axis2_json_reader_create_for_memory(
         struct json_tokener* tokener = json_tokener_new();
 
         reader->axiom_node = NULL;
+        reader->axiom_node_headers = NULL;
         reader->json_obj = json_tokener_parse_ex(tokener, json_string, json_string_size);
         if (tokener->err != json_tokener_success)
         {

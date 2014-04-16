@@ -289,7 +289,9 @@ test_json(
         "<root><child1><sub>value 1</sub></child1><child2>value 2</child2></root>",
         "<root><child></child><ch>value 1</ch><ch>value 2</ch><ch>value 3</ch></root>",
         "<root><child></child><ch><sub>11</sub><sub>12</sub></ch><ch><sub>11</sub><sub>12</sub></ch></root>",
-        "<root><ch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\"></ch></root>"
+        "<root><ch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\"></ch></root>",
+        "<root><ch xmlns:enc=\"http://schemas.xmlsoap.org/soap/encoding/\" enc:arrayType=\"string[2]\"><a>1</a><b>2</b></ch></root>",
+        "<root><ch>1</ch><ch>2</ch></root>"
     };
 
     const char* json_data_mapped[] =
@@ -298,17 +300,18 @@ test_json(
         "{\"root\":{\"child1\":{\"sub\":\"value 1\"},\"child2\":\"value 2\"}}",
         "{\"root\":{\"child\":\"\",\"ch\":[\"value 1\",\"value 2\",\"value 3\"]}}",
         "{\"root\":{\"child\":\"\",\"ch\":[{\"sub\":[\"11\",\"12\"]},{\"sub\":[\"11\",\"12\"]}]}}",
-        "{\"root\":{\"ch\":null}}"
+        "{\"root\":{\"ch\":null}}",
+        "{\"root\":{\"ch\":[\"1\",\"2\"]}}"
     };
 
     int xml2mapped[sizeof(xml_data) / sizeof(xml_data[0])] =
     {
-        0, 0, 1, 2, 3, 4
+        0, 0, 1, 2, 3, 4, 5, 5
     };
 
     int mapped2xml[sizeof(json_data_mapped) / sizeof(json_data_mapped[0])] =
     {
-        0, 2, 3, 4, 5
+        0, 2, 3, 4, 5, 7
     };
 
     printf(" ######################## testing xml -> json ########################## \n");
