@@ -288,10 +288,13 @@ test_json(
         "<root> \t\r\n<child1>value 1</child1> <child2>value 2</child2>\n</root>",
         "<root><child1><sub>value 1</sub></child1><child2>value 2</child2></root>",
         "<root><child></child><ch>value 1</ch><ch>value 2</ch><ch>value 3</ch></root>",
-        "<root><child></child><ch><sub>11</sub><sub>12</sub></ch><ch><sub>11</sub><sub>12</sub></ch></root>",
+        "<root><child></child><ch><sub>11</sub><sub>12</sub></ch><ch><sub>21</sub><sub>22</sub></ch></root>",
         "<root><ch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\"></ch></root>",
         "<root><ch xmlns:enc=\"http://schemas.xmlsoap.org/soap/encoding/\" enc:arrayType=\"string[2]\"><a>1</a><b>2</b></ch></root>",
-        "<root><ch>1</ch><ch>2</ch></root>"
+        "<root><ch xmlns:enc=\"http://schemas.xmlsoap.org/soap/encoding/\" enc:arrayType=\"string[2]\"><item>1</item><item>2</item></ch></root>",
+        "<root><ch xmlns:enc=\"http://schemas.xmlsoap.org/soap/encoding/\" enc:arrayType=\"string[0]\"></ch></root>",
+        "<root><child></child><ch xmlns:enc=\"http://schemas.xmlsoap.org/soap/encoding/\" enc:arrayType=\"string[3]\"><item>value 1</item><item>value 2</item><item>value 3</item></ch></root>",
+        "<root><child></child><ch xmlns:enc=\"http://schemas.xmlsoap.org/soap/encoding/\" enc:arrayType=\"object[2]\"><item><sub enc:arrayType=\"string[2]\"><item>11</item><item>12</item></sub></item><item><sub enc:arrayType=\"string[2]\"><item>21</item><item>22</item></sub></item></ch></root>"
     };
 
     const char* json_data_mapped[] =
@@ -299,19 +302,20 @@ test_json(
         "{\"root\":{\"child1\":\"value 1\",\"child2\":\"value 2\"}}",
         "{\"root\":{\"child1\":{\"sub\":\"value 1\"},\"child2\":\"value 2\"}}",
         "{\"root\":{\"child\":\"\",\"ch\":[\"value 1\",\"value 2\",\"value 3\"]}}",
-        "{\"root\":{\"child\":\"\",\"ch\":[{\"sub\":[\"11\",\"12\"]},{\"sub\":[\"11\",\"12\"]}]}}",
+        "{\"root\":{\"child\":\"\",\"ch\":[{\"sub\":[\"11\",\"12\"]},{\"sub\":[\"21\",\"22\"]}]}}",
         "{\"root\":{\"ch\":null}}",
-        "{\"root\":{\"ch\":[\"1\",\"2\"]}}"
+        "{\"root\":{\"ch\":[\"1\",\"2\"]}}",
+        "{\"root\":{\"ch\":[]}}"
     };
 
     int xml2mapped[sizeof(xml_data) / sizeof(xml_data[0])] =
     {
-        0, 0, 1, 2, 3, 4, 5, 5
+        0, 0, 1, 2, 3, 4, 5, 5, 6, 2, 3
     };
 
     int mapped2xml[sizeof(json_data_mapped) / sizeof(json_data_mapped[0])] =
     {
-        0, 2, 3, 4, 5, 7
+        0, 2, 9, 10, 5, 7, 8
     };
 
     printf(" ######################## testing xml -> json ########################## \n");
@@ -340,7 +344,7 @@ test_json(
         if (strcmp(result_str, json_data_mapped[xml2mapped[i]]))
         {
             ++failed;
-            printf("TEST FAILED\nexpected result: %s\n", json_data_mapped[xml2mapped[i]]);
+            printf("\e[31;1mTEST FAILED\nexpected result: %s\e[0m\n", json_data_mapped[xml2mapped[i]]);
         }
         else
         {
@@ -396,7 +400,7 @@ test_json(
         if (strcmp(xml_str, xml_data[mapped2xml[i]]))
         {
             ++failed;
-            printf("TEST FAILED\nExpected result: %s\n", xml_data[mapped2xml[i]]);
+            printf("\e[31;1mTEST FAILED\nExpected result: %s\e[0m\n", xml_data[mapped2xml[i]]);
         }
         else
         {

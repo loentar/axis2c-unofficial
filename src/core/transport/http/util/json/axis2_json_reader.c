@@ -14,6 +14,7 @@
  *  limitations under the License.
  */
 
+#include <platforms/axutil_platform_auto_sense.h>
 #include <axutil_utils_defines.h>
 #include <axutil_stream.h>
 #include <axiom_node.h>
@@ -23,6 +24,7 @@
 #include <axis2_json_reader.h>
 
 #define AXIS2_JSON_XSI_URI "http://www.w3.org/2001/XMLSchema-instance"
+#define AXIS2_JSON_SOAP_ENCODING_URI "http://schemas.xmlsoap.org/soap/encoding/"
 #define AXIS2_JSON_HEADERS_NAME "@headers"
 
 struct axis2_json_reader
@@ -100,12 +102,73 @@ axis2_json_read_child_node(
     {
         int i;
         int array_len = json_object_array_length(child_object);
+        json_object* json_item;
+        axiom_node_t* om_array_node = NULL;
+        axiom_element_t* om_array_elem;
+        axis2_char_t* array_type;
+        axiom_namespace_t* ns;
+        axiom_attribute_t* attr;
+        axis2_char_t array_type_str[32];
+
+        /* create element for array object:
+           <element xmlns:enc="http://schemas.xmlsoap.org/soap/encoding/" enc:arrayType="string[2]">
+              <item>value 1</item>
+              <item>value 2</item>
+           </element>
+        */
+
+        om_array_elem = axiom_element_create(env, NULL, child_name, NULL, &om_array_node);
+        if (!om_array_elem)
+            return AXIS2_FAILURE;
+
+        if (axiom_node_add_child(om_node, env, om_array_node) != AXIS2_SUCCESS)
+        {
+            axiom_node_free_tree(om_array_node, env);
+            return AXIS2_FAILURE;
+        }
+
         for (i = 0; i < array_len; ++i)
         {
-            if (axis2_json_read_child_node(json_object_array_get_idx(child_object, i),
-                                       child_name, om_node, env) != AXIS2_SUCCESS)
+            json_item = json_object_array_get_idx(child_object, i);
+            if (axis2_json_read_child_node(json_item, "item", om_array_node,
+                                           env) != AXIS2_SUCCESS)
                 return AXIS2_FAILURE;
         }
+
+        /* detect type of children by type of object of last json array */
+        switch (json_object_get_type(json_item))
+        {
+        case json_type_boolean:
+            array_type = "bool";
+            break;
+        case json_type_double:
+            array_type = "double";
+            break;
+        case json_type_int:
+            array_type = "int";
+            break;
+        case json_type_object:
+            array_type = "object";
+            break;
+        case json_type_array:
+            array_type = "array";
+            break;
+        default:
+            array_type = "string";
+            break;
+        }
+
+        ns = axiom_namespace_create(env, AXIS2_JSON_SOAP_ENCODING_URI, "enc");
+        if (!ns)
+            return AXIS2_FAILURE;
+
+        axiom_element_declare_namespace(om_array_elem, env, om_array_node, ns);
+
+        AXIS2_SNPRINTF(array_type_str, sizeof(array_type_str), "%s[%d]", array_type, array_len);
+        attr = axiom_attribute_create(env, "arrayType", array_type_str, ns);
+
+        axiom_element_add_attribute(om_array_elem, env, attr, om_array_node);
+
         break;
     }
 
@@ -126,7 +189,7 @@ axis2_json_read_child_node(
 
         if (axiom_node_add_child(om_node, env, om_child_node) != AXIS2_SUCCESS)
         {
-            axiom_node_free_tree(om_text_node, env);
+            axiom_node_free_tree(om_child_node, env);
             return AXIS2_FAILURE;
         }
 
