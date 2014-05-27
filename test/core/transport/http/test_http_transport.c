@@ -289,12 +289,17 @@ test_json(
         "<root><child1><sub>value 1</sub></child1><child2>value 2</child2></root>",
         "<root><child></child><ch>value 1</ch><ch>value 2</ch><ch>value 3</ch></root>",
         "<root><child></child><ch><sub>11</sub><sub>12</sub></ch><ch><sub>21</sub><sub>22</sub></ch></root>",
-        "<root><ch xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\"></ch></root>",
+/*5*/   "<root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><ch xsi:nil=\"true\"></ch></root>",
         "<root><ch xmlns:enc=\"http://schemas.xmlsoap.org/soap/encoding/\" enc:arrayType=\"string[2]\"><a>1</a><b>2</b></ch></root>",
         "<root><ch xmlns:enc=\"http://schemas.xmlsoap.org/soap/encoding/\" enc:arrayType=\"string[2]\"><item>1</item><item>2</item></ch></root>",
-        "<root><ch xmlns:enc=\"http://schemas.xmlsoap.org/soap/encoding/\" enc:arrayType=\"string[0]\"></ch></root>",
+        "<root><ch xmlns:enc=\"http://schemas.xmlsoap.org/soap/encoding/\" enc:arrayType=\"null[0]\"></ch></root>",
         "<root><child></child><ch xmlns:enc=\"http://schemas.xmlsoap.org/soap/encoding/\" enc:arrayType=\"string[3]\"><item>value 1</item><item>value 2</item><item>value 3</item></ch></root>",
-        "<root><child></child><ch xmlns:enc=\"http://schemas.xmlsoap.org/soap/encoding/\" enc:arrayType=\"object[2]\"><item><sub enc:arrayType=\"string[2]\"><item>11</item><item>12</item></sub></item><item><sub enc:arrayType=\"string[2]\"><item>21</item><item>22</item></sub></item></ch></root>"
+/*10*/  "<root><child></child><ch xmlns:enc=\"http://schemas.xmlsoap.org/soap/encoding/\" enc:arrayType=\"object[2]\"><item><sub enc:arrayType=\"string[2]\"><item>11</item><item>12</item></sub></item><item><sub enc:arrayType=\"string[2]\"><item>21</item><item>22</item></sub></item></ch></root>",
+        "<root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><ch xsi:type=\"boolean\">true</ch></root>",
+        "<root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><ch xsi:type=\"boolean\">false</ch></root>",
+        "<root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><ch xsi:type=\"int\">123</ch></root>",
+        "<root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><ch xsi:type=\"double\">123.456789</ch></root>",
+        "<root xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><ch xmlns:enc=\"http://schemas.xmlsoap.org/soap/encoding/\" enc:arrayType=\"int[2]\"><item xsi:type=\"int\">1</item><item xsi:type=\"int\">2</item></ch></root>"
     };
 
     const char* json_data_mapped[] =
@@ -304,18 +309,23 @@ test_json(
         "{\"root\":{\"child\":\"\",\"ch\":[\"value 1\",\"value 2\",\"value 3\"]}}",
         "{\"root\":{\"child\":\"\",\"ch\":[{\"sub\":[\"11\",\"12\"]},{\"sub\":[\"21\",\"22\"]}]}}",
         "{\"root\":{\"ch\":null}}",
-        "{\"root\":{\"ch\":[\"1\",\"2\"]}}",
-        "{\"root\":{\"ch\":[]}}"
+/*5*/   "{\"root\":{\"ch\":[\"1\",\"2\"]}}",
+        "{\"root\":{\"ch\":[]}}",
+        "{\"root\":{\"ch\":true}}",
+        "{\"root\":{\"ch\":false}}",
+        "{\"root\":{\"ch\":123}}",
+/*10*/  "{\"root\":{\"ch\":123.456789}}",
+        "{\"root\":{\"ch\":[1,2]}}",
     };
 
     int xml2mapped[sizeof(xml_data) / sizeof(xml_data[0])] =
     {
-        0, 0, 1, 2, 3, 4, 5, 5, 6, 2, 3
+        0, 0, 1, 2, 3, 4, 5, 5, 6, 2, 3, 7, 8, 9, 10, 11
     };
 
     int mapped2xml[sizeof(json_data_mapped) / sizeof(json_data_mapped[0])] =
     {
-        0, 2, 9, 10, 5, 7, 8
+        0, 2, 9, 10, 5, 7, 8, 11, 12, 13, 14, 15
     };
 
     printf(" ######################## testing xml -> json ########################## \n");
@@ -328,9 +338,9 @@ test_json(
 
         xml_str = axiom_node_to_string(root_node, env);
 
-        printf(" =============== source XML ================\n%s\n"
+        printf(" =============== source XML #%d ================\n%s\n"
                " ===========================================\n",
-               xml_str);
+               i, xml_str);
         AXIS2_FREE(env->allocator, xml_str);
 
         json_writer = axis2_json_writer_create(env);
@@ -344,7 +354,8 @@ test_json(
         if (strcmp(result_str, json_data_mapped[xml2mapped[i]]))
         {
             ++failed;
-            printf("\e[31;1mTEST FAILED\nexpected result: %s\e[0m\n", json_data_mapped[xml2mapped[i]]);
+            printf("\e[31;1mTEST FAILED\nexpected result #%d:\n %s\e[0m\n",
+                   xml2mapped[i], json_data_mapped[xml2mapped[i]]);
         }
         else
         {
@@ -386,9 +397,9 @@ test_json(
         }
 
 
-        printf(" =============== source JSON ================\n%s\n"
+        printf(" =============== source JSON #%d ================\n%s\n"
                " ===========================================\n",
-               json);
+               i, json);
 
 
         xml_str = axiom_node_to_string(root_node, env);
@@ -400,7 +411,8 @@ test_json(
         if (strcmp(xml_str, xml_data[mapped2xml[i]]))
         {
             ++failed;
-            printf("\e[31;1mTEST FAILED\nExpected result: %s\e[0m\n", xml_data[mapped2xml[i]]);
+            printf("\e[31;1mTEST FAILED\nExpected result #%d:\n%s\e[0m\n",
+                   mapped2xml[i], xml_data[mapped2xml[i]]);
         }
         else
         {

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2013 Utkin Dmitry
+ *  Copyright 2013-2014 Utkin Dmitry
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 #include <axiom_element.h>
 #include <axiom_attribute.h>
 #include <json.h>
+#include <json_util.h>
 #include <axis2_json_reader.h>
 
 #define AXIS2_JSON_XSI_URI "http://www.w3.org/2001/XMLSchema-instance"
@@ -71,27 +72,78 @@ const char* json_tokener_error_to_str(enum json_tokener_error error)
 }
 
 axis2_status_t
-axis2_json_read_node(
-        json_object* parent,
+axis2_json_read_node(json_object* parent,
         const char* name,
         axiom_node_t** om_node,
+        axiom_namespace_t** xsi_ns,
         const axutil_env_t* env);
 
+
+axis2_status_t
+axis2_json_declare_xsi_ns(axiom_node_t* om_node,
+                          axiom_namespace_t** xsi_ns,
+                          const axutil_env_t* env)
+{
+    axiom_node_t* om_root = om_node;
+    axiom_element_t* om_elem;
+
+    *xsi_ns = axiom_namespace_create(env, AXIS2_JSON_XSI_URI, "xsi");
+    if (!*xsi_ns)
+        return AXIS2_FAILURE;
+
+    /* find root element to declare ns */
+    while ((om_node = axiom_node_get_parent(om_root, env)))
+        om_root = om_node;
+
+    if (!om_root)
+    {
+        axiom_namespace_free(*xsi_ns, env);
+        *xsi_ns = NULL;
+        return AXIS2_FAILURE;
+    }
+
+    om_elem = (axiom_element_t*)axiom_node_get_data_element(om_root, env);
+    if (!om_elem)
+    {
+        axiom_namespace_free(*xsi_ns, env);
+        *xsi_ns = NULL;
+        return AXIS2_FAILURE;
+    }
+
+    return axiom_element_declare_namespace(om_elem, env, om_root, *xsi_ns);
+}
+
+axis2_bool_t
+axis2_json_get_do_write_type(json_type type)
+{
+    switch (type)
+    {
+    case json_type_boolean:
+    case json_type_double:
+    case json_type_int:
+        return AXIS2_TRUE;
+
+    default:
+        return AXIS2_FALSE;
+    }
+}
 
 axis2_status_t
 axis2_json_read_child_node(
         json_object* child_object,
         const char* child_name,
         axiom_node_t* om_node,
+        axiom_namespace_t** xsi_ns,
         const axutil_env_t* env)
 {
     axiom_node_t* child_node = NULL;
+    const json_type json_object_type = json_object_get_type(child_object);
 
-    switch (json_object_get_type(child_object))
+    switch (json_object_type)
     {
     case json_type_object:
     {
-        if (axis2_json_read_node(child_object, child_name, &child_node, env) != AXIS2_SUCCESS)
+        if (axis2_json_read_node(child_object, child_name, &child_node, xsi_ns, env) != AXIS2_SUCCESS)
             return AXIS2_FAILURE;
         if (axiom_node_add_child(om_node, env, child_node) != AXIS2_SUCCESS)
             return AXIS2_FAILURE;
@@ -102,10 +154,10 @@ axis2_json_read_child_node(
     {
         int i;
         int array_len = json_object_array_length(child_object);
-        json_object* json_item;
+        json_object* json_item = NULL;
         axiom_node_t* om_array_node = NULL;
         axiom_element_t* om_array_elem;
-        axis2_char_t* array_type;
+        const axis2_char_t* array_type;
         axiom_namespace_t* ns;
         axiom_attribute_t* attr;
         axis2_char_t array_type_str[32];
@@ -131,32 +183,12 @@ axis2_json_read_child_node(
         {
             json_item = json_object_array_get_idx(child_object, i);
             if (axis2_json_read_child_node(json_item, "item", om_array_node,
-                                           env) != AXIS2_SUCCESS)
+                                           xsi_ns, env) != AXIS2_SUCCESS)
                 return AXIS2_FAILURE;
         }
 
         /* detect type of children by type of object of last json array */
-        switch (json_object_get_type(json_item))
-        {
-        case json_type_boolean:
-            array_type = "bool";
-            break;
-        case json_type_double:
-            array_type = "double";
-            break;
-        case json_type_int:
-            array_type = "int";
-            break;
-        case json_type_object:
-            array_type = "object";
-            break;
-        case json_type_array:
-            array_type = "array";
-            break;
-        default:
-            array_type = "string";
-            break;
-        }
+        array_type = json_type_to_name(json_object_get_type(json_item));
 
         ns = axiom_namespace_create(env, AXIS2_JSON_SOAP_ENCODING_URI, "enc");
         if (!ns)
@@ -179,8 +211,10 @@ axis2_json_read_child_node(
     {
         axiom_node_t* om_child_node = NULL;
         axiom_node_t* om_text_node = NULL;
+        axiom_element_t* om_child_elem =
+                axiom_element_create(env, NULL, child_name, NULL, &om_child_node);
 
-        if (!axiom_element_create(env, NULL, child_name, NULL, &om_child_node))
+        if (!om_child_elem)
             return AXIS2_FAILURE;
 
         if (!axiom_text_create(env, om_child_node, json_object_get_string(child_object),
@@ -193,6 +227,17 @@ axis2_json_read_child_node(
             return AXIS2_FAILURE;
         }
 
+        if (axis2_json_get_do_write_type(json_object_type))
+        {
+            const axis2_char_t* type = json_type_to_name(json_object_type);
+            axiom_attribute_t* attr;
+            if (!*xsi_ns)
+                if (axis2_json_declare_xsi_ns(om_node, xsi_ns, env) != AXIS2_SUCCESS)
+                    return AXIS2_FAILURE;
+            attr = axiom_attribute_create(env, "type", type, *xsi_ns);
+            axiom_element_add_attribute(om_child_elem, env, attr, om_child_node);
+        }
+
         break;
     }
 
@@ -203,32 +248,24 @@ axis2_json_read_child_node(
 
         /* handle as nillable */
         axiom_attribute_t* attr;
-        axiom_namespace_t* ns =
-                axiom_namespace_create(env, AXIS2_JSON_XSI_URI, "xsi");
-
-        if (!ns)
-            return AXIS2_FAILURE;
 
         om_child_elem = axiom_element_create(env, NULL, child_name, NULL, &om_child_node);
         if (!om_child_elem)
-        {
-            axiom_namespace_free(ns, env);
             return AXIS2_FAILURE;
-        }
 
         if (axiom_node_add_child(om_node, env, om_child_node) != AXIS2_SUCCESS)
         {
-            axiom_namespace_free(ns, env);
             axiom_node_free_tree(om_child_node, env);
             return AXIS2_FAILURE;
         }
 
-        attr = axiom_attribute_create(env, "nil", "true", ns);
+        if (!*xsi_ns)
+            if (axis2_json_declare_xsi_ns(om_node, xsi_ns, env) != AXIS2_SUCCESS)
+                return AXIS2_FAILURE;
+
+        attr = axiom_attribute_create(env, "nil", "true", *xsi_ns);
         if (!attr)
-        {
-            axiom_attribute_free(attr, env);
             return AXIS2_FAILURE;
-        }
 
         if (axiom_element_add_attribute(om_child_elem, env, attr,
                                         om_child_node) != AXIS2_SUCCESS)
@@ -249,17 +286,20 @@ axis2_json_read_node(
         json_object* parent,
         const char* name,
         axiom_node_t** om_node,
+        axiom_namespace_t** xsi_ns,
         const axutil_env_t* env)
 {
     if (!json_object_is_type(parent, json_type_object))
         return AXIS2_FAILURE;
 
-    axiom_element_create(env, NULL, name, NULL, om_node);
+    if (!axiom_element_create(env, NULL, name, NULL, om_node))
+        return AXIS2_FAILURE;
 
     {
         json_object_object_foreach(parent, child_name, child_object)
         {
-            if (axis2_json_read_child_node(child_object, child_name, *om_node, env) != AXIS2_SUCCESS)
+            if (axis2_json_read_child_node(child_object, child_name, *om_node,
+                                           xsi_ns, env) != AXIS2_SUCCESS)
                 return AXIS2_FAILURE;
         }
     }
@@ -370,6 +410,7 @@ axis2_json_reader_read(
     json_object* json_root = NULL;
     const char* json_root_name = NULL;
     json_object* json_headers = NULL;
+    axiom_namespace_t* xsi_ns = NULL;
 
     /* free existing om tree */
     if (reader->axiom_node)
@@ -411,10 +452,12 @@ axis2_json_reader_read(
     if (json_headers)
     {
         axis2_json_read_node(json_headers, AXIS2_JSON_HEADERS_NAME,
-                             &reader->axiom_node_headers, env);
+                             &reader->axiom_node_headers, &xsi_ns, env);
+        xsi_ns = NULL;
     }
 
-    return axis2_json_read_node(json_root, json_root_name, &reader->axiom_node, env);
+    return axis2_json_read_node(json_root, json_root_name, &reader->axiom_node,
+                                &xsi_ns, env);
 }
 
 
