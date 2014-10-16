@@ -30,7 +30,7 @@
 #endif
 #endif
 
-#if !defined(WIN32)
+#if !defined(WIN32) || _MSC_VER >= 1700
 #include <stdint.h> 
 #endif
 
@@ -39,7 +39,7 @@ extern "C"
 {
 #endif
 
-#if defined(WIN32) && !defined(AXIS2_SKIP_INT_TYPEDEFS)
+#if defined(WIN32) && !defined(AXIS2_SKIP_INT_TYPEDEFS) && _MSC_VER < 1700
     /**
      * ANSI Type definitions for Windows
      */
