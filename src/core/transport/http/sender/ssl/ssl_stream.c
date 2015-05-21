@@ -127,6 +127,8 @@ axis2_ssl_stream_free(
 
     stream_impl = AXIS2_INTF_TO_IMPL(stream);
     axis2_ssl_utils_cleanup_ssl(env, stream_impl->ctx, stream_impl->ssl);
+    if (stream_impl->socket > -1)
+        axutil_network_handler_close_socket(env, stream_impl->socket);
     AXIS2_FREE(env->allocator, stream_impl);
 
     return;
