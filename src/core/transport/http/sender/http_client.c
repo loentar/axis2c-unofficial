@@ -225,6 +225,11 @@ axis2_http_client_send(
     host = axutil_url_get_host(client->url, env);
     port = axutil_url_get_port(client->url, env);
 
+    if (-1 != client->sockfd)
+    {
+        axutil_network_handler_close_socket(env, client->sockfd);
+        client->sockfd = -1;
+    }
 
     if (client->proxy_enabled)
     {
