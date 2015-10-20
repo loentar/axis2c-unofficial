@@ -45,7 +45,7 @@ struct dirent
 /* def struct DIR - different from Unix DIR */
 typedef struct
 {
-    long handle;          /* _findfirst/_findnext handle */
+    intptr_t handle;      /* _findfirst/_findnext handle */
     short offset;         /* offset into directory */
     short finished;       /* 1 if there are not more files */
     struct _finddata_t fileinfo;  /* from _findfirst/_findnext */

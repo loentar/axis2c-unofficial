@@ -30,7 +30,7 @@ axis2_opendir(
 {
     AXIS2_DIR *dirp;
     char *filespec;
-    long handle;
+    intptr_t handle;
     int index;
 
     filespec = malloc(strlen(_dirname) + 2 + 1);
@@ -46,7 +46,7 @@ axis2_opendir(
     dirp->offset = 0;
     dirp->finished = 0;
 
-    if ((handle = (long)_findfirst(filespec, &(dirp->fileinfo))) < 0)
+    if ((handle = _findfirst(filespec, &(dirp->fileinfo))) < 0)
         /* We are sure that the difference lies within the long range */
     {
         if (errno == ENOENT || errno == EINVAL)
@@ -147,7 +147,7 @@ axis2_rewinddir(
     AXIS2_DIR * dirp)
 {
     char *filespec;
-    long handle;
+    intptr_t handle;
     int index;
 
     _findclose(dirp->handle);
@@ -162,7 +162,7 @@ axis2_rewinddir(
         filespec[index] = '\0';
     strcat(filespec, "/*");
 
-    if ((handle = (long)_findfirst(filespec, &(dirp->fileinfo))) < 0)
+    if ((handle = _findfirst(filespec, &(dirp->fileinfo))) < 0)
         /* We are sure that the difference lies within the int range */
     {
         if (errno == ENOENT || errno == EINVAL)
