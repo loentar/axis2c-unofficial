@@ -31,7 +31,7 @@
 #endif
 
 #if !defined(WIN32) || _MSC_VER >= 1700
-#include <stdint.h> 
+#include <stdint.h>
 #endif
 
 #ifdef __cplusplus
@@ -51,6 +51,14 @@ extern "C"
     typedef __int32 int32_t;
     typedef unsigned __int64 uint64_t;
     typedef __int64 int64_t;
+#endif
+
+#if defined(WIN32) && _MSC_VER == 1200
+	/**
+	* Not defined in Visual Studio 6 but is reqired
+	* by dir_windows.c and axutil_dir_windows.h
+	**/
+	typedef long intptr_t;
 #endif
 
 /**
