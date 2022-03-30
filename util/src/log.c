@@ -138,57 +138,67 @@ axutil_log_create(
     else
         AXIS2_SNPRINTF(tmp_filename, AXUTIL_LOG_FILE_NAME_SIZE, "%s", "axis2.log");
 
-    /* we write all logs to AXIS2C_HOME/logs if it is set otherwise
-     * to the working dir
-     */
-    if (stream_name && !(axutil_rindex(stream_name, AXIS2_PATH_SEP_CHAR)))
-    {
-        path_home = AXIS2_GETENV("AXIS2C_HOME");
-        if (path_home)
+    if (strcmp("stderr", tmp_filename) != 0) {
+        /* we write all logs to AXIS2C_HOME/logs if it is set otherwise
+         * to the working dir
+         */
+        if (stream_name && !(axutil_rindex(stream_name, AXIS2_PATH_SEP_CHAR)))
         {
-            AXIS2_SNPRINTF(log_dir, AXUTIL_LOG_FILE_NAME_SIZE, "%s%c%s", 
-                path_home, AXIS2_PATH_SEP_CHAR, "logs");
-            if (AXIS2_SUCCESS ==
-                axutil_file_handler_access(log_dir, AXIS2_F_OK))
+            path_home = AXIS2_GETENV("AXIS2C_HOME");
+            if (path_home)
             {
-                AXIS2_SNPRINTF(log_file_name, AXUTIL_LOG_FILE_NAME_SIZE, 
-                    "%s%c%s", log_dir, AXIS2_PATH_SEP_CHAR, tmp_filename);
+                AXIS2_SNPRINTF(log_dir, AXUTIL_LOG_FILE_NAME_SIZE, "%s%c%s", 
+                    path_home, AXIS2_PATH_SEP_CHAR, "logs");
+                if (AXIS2_SUCCESS ==
+                    axutil_file_handler_access(log_dir, AXIS2_F_OK))
+                {
+                    AXIS2_SNPRINTF(log_file_name, AXUTIL_LOG_FILE_NAME_SIZE, 
+                        "%s%c%s", log_dir, AXIS2_PATH_SEP_CHAR, tmp_filename);
+                }
+                else
+                {
+                    fprintf(stderr, "log folder %s does not exist - log file %s "\
+                        "is written to . dir\n", log_dir, tmp_filename);
+                    AXIS2_SNPRINTF(log_file_name, AXUTIL_LOG_FILE_NAME_SIZE, "%s", 
+                        tmp_filename);
+                }
             }
             else
             {
-                fprintf(stderr, "log folder %s does not exist - log file %s "\
-                    "is written to . dir\n", log_dir, tmp_filename);
+                fprintf(stderr,
+                    "AXIS2C_HOME is not set - log is written to . dir\n");
                 AXIS2_SNPRINTF(log_file_name, AXUTIL_LOG_FILE_NAME_SIZE, "%s", 
                     tmp_filename);
             }
         }
         else
         {
-            fprintf(stderr,
-                "AXIS2C_HOME is not set - log is written to . dir\n");
             AXIS2_SNPRINTF(log_file_name, AXUTIL_LOG_FILE_NAME_SIZE, "%s", 
                 tmp_filename);
         }
-    }
-    else
-    {
-        AXIS2_SNPRINTF(log_file_name, AXUTIL_LOG_FILE_NAME_SIZE, "%s", 
-            tmp_filename);
-    }
-    log_impl->file_name = AXIS2_MALLOC(allocator, AXUTIL_LOG_FILE_NAME_SIZE);
-    log_impl->log.size = AXUTIL_LOG_FILE_SIZE;
-    sprintf(log_impl->file_name, "%s", log_file_name);
+        log_impl->file_name = AXIS2_MALLOC(allocator, AXUTIL_LOG_FILE_NAME_SIZE);
+        log_impl->log.size = AXUTIL_LOG_FILE_SIZE;
+        sprintf(log_impl->file_name, "%s", log_file_name);
 
-    axutil_thread_mutex_lock(log_impl->mutex);
+        axutil_thread_mutex_lock(log_impl->mutex);
 
-    log_impl->stream = axutil_file_handler_open(log_file_name, "a+");
+        log_impl->stream = axutil_file_handler_open(log_file_name, "a+");
 
-    /*If the stream was opened succesfully set the log type*/
-    if(log_impl->stream)
-        log_impl->stream_type = AXUTIL_LOG_FILE;
-    /*Else, use stderr*/
-    else
-    {
+        /*If the stream was opened succesfully set the log type*/
+        if(log_impl->stream)
+            log_impl->stream_type = AXUTIL_LOG_FILE;
+        /*Else, use stderr*/
+        else
+        {
+           fprintf(stderr, "AXIS2C could not open logfile '%s' for appending, logging to stderr\n", log_file_name);
+           log_impl->stream_type = AXUTIL_LOG_STDERR;
+           log_impl->stream = stderr;
+        }
+    } else {
+       fprintf(stderr, "AXIS2C logging to stderr as configured with config directive '%s'\n", tmp_filename);
+       log_impl->file_name = AXIS2_MALLOC(allocator, AXUTIL_LOG_FILE_NAME_SIZE);
+       log_impl->log.size = AXUTIL_LOG_FILE_SIZE;
+       sprintf(log_impl->file_name, "%s", "stderr.log");
        log_impl->stream_type = AXUTIL_LOG_STDERR;
        log_impl->stream = stderr;
     }
